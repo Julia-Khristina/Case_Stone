@@ -1,0 +1,14 @@
+# Verbos aceitos na chamada para ação (estrutura herdada do Case Suno).
+# "comentar" e "participar" entram porque o convite à participação teve o maior CTR do histórico da Stone.
+verbos:
+  - comentar
+  - salvar
+  - compartilhar
+  - participar
+  - seguir
+imperativos:
+  comentar: ["comente", "comentem", "comenta"]
+  salvar: ["salve", "salvem", "salva"]
+  compartilhar: ["compartilhe", "compartilhem", "compartilha", "mande para", "envie para"]
+  participar: ["participe", "participem", "inscreva-se", "inscrevam-se"]
+  seguir: ["siga", "sigam", "segue"]

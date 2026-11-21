@@ -1,0 +1,65 @@
+# Faixas de horário sugeridas para a equipe da Stone. ORIENTAÇÃO GERAL, não previsão.
+# O feed do Instagram não é cronológico: o conteúdo pesa mais que o horário.
+# Prioridade de uso: 1) Insights da conta @impulsostone (se a Stone liberar) > 2) horários dos melhores posts
+# da própria base (indício) > 3) estas faixas, que combinam os estudos abaixo.
+# Horários no fuso local do público (America/Sao_Paulo). Consulta das fontes: 21/11/2026.
+versao: "1"
+fontes:
+  - id: opinionbox
+    nome: "Opinion Box · Pesquisa Instagram no Brasil"
+    url: "https://blog.opinionbox.com/melhor-horario-para-postar-no-instagram/"
+    publicado: "2026-10-19"
+    o_que_mede: "quando os brasileiros acessam o Instagram (uso, não engajamento)"
+    achado: "20% acessam mais entre 18h e 20h; 27% entre 20h e 0h; evitar 6h–9h e depois de 0h"
+    limitacao: "a página não informa tamanho da amostra nem período de campo"
+  - id: buffer
+    nome: "Buffer · State of Social Engagement 2026"
+    url: "https://buffer.com/library/best-time-to-post-on-instagram"
+    publicado: "2026-09-23"
+    o_que_mede: "engajamento mediano de 9,6 milhões de posts, 200 mil contas, jan/2024–dez/2025, global"
+    achado: "melhores: quinta 9h, quarta 12h, quarta 18h; piores dias: sexta e sábado; evitar 1h–5h"
+    limitacao: "amostra global de clientes da ferramenta, não específica do Brasil"
+  - id: sprout
+    nome: "Sprout Social · Best times to post on Instagram"
+    url: "https://sproutsocial.com/best-times-to-post/instagram-general"
+    publicado: "2026-03-31"
+    o_que_mede: "engajamento de cerca de 307 mil perfis, nov/2025–fev/2026, várias redes"
+    achado: "seg 14h–16h, ter 13h–19h, qua 12h–21h, qui 12h–14h; fim de semana fraco"
+    limitacao: "amostra global e multiplataforma; recorte só do Instagram não divulgado"
+
+# forca: forte | moderado | fraco (combinação dos dias citados por Buffer e Sprout)
+# A agenda não sugere posts em dias "fraco", a menos que haja uma data comemorativa.
+dias:
+  segunda:
+    forca: moderado
+    principal: "18h–20h"
+    alternativa: "14h–16h"
+    base: [opinionbox, buffer, sprout]
+  terca:
+    forca: forte
+    principal: "18h–20h"
+    alternativa: "13h–15h"
+    base: [opinionbox, buffer, sprout]
+  quarta:
+    forca: forte
+    principal: "18h–20h"
+    alternativa: "12h–13h"
+    base: [opinionbox, buffer, sprout]
+  quinta:
+    forca: forte
+    principal: "12h–14h"
+    alternativa: "18h–20h"
+    base: [sprout, opinionbox]
+    observacao: "Buffer aponta 9h, mas a Opinion Box indica baixo uso no Brasil entre 6h e 9h"
+  sexta:
+    forca: fraco
+    principal: "20h–22h"
+    base: [opinionbox, buffer]
+  sabado:
+    forca: fraco
+    principal: "20h–22h"
+    base: [opinionbox, buffer]
+  domingo:
+    forca: moderado
+    principal: "20h–22h"
+    base: [opinionbox, buffer]

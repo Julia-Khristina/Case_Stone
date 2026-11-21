@@ -1,0 +1,81 @@
+# Contexto interno da Stone usado pelo agente. Fonte interna: nunca misturar com as referências externas.
+# Origem: documentos/relatorio_impulso_stone_instagram.pdf e
+#         documentos/Impulso Stone · Histórico de Campanhas e Criativos.pptx.pdf (fev–out 2026).
+versao: "1"
+
+# O que o Impulso Stone é. Fonte: aula 1 (impulsostone.com.br/sobre-nos) e anúncios do histórico de campanhas.
+# Acrescentado em 22/11/2026: o primeiro criativo real atribuiu ao Impulso "pagamento instantâneo", e nem o
+# verificador nem o juiz pegaram.
+oferta:
+  o_que_e: >-
+    Programa de produtividade inclusiva do Instituto Stone Impacto, o braço social da Stone. Leva educação e
+    desenvolvimento ao empreendedor da base da pirâmide.
+  oferece:
+    - "educação prática para o negócio (oficinas e conteúdos)"
+    - "mentoria profissional"
+    - "orientação gratuita para empreendedores"
+    - "acesso a microcrédito, mediante análise de perfil"
+    - "comunidade de empreendedores"
+  nao_oferece:
+    - "maquininha, conta ou pagamento (são produtos da Stone, não do Impulso)"
+    - "crédito garantido ou aprovado sem análise"
+    - "promessa de faturamento ou lucro"
+# Oferta da marca Stone, usada quando a peça é para a @stone (o agente escreve para as duas contas).
+# Só o que é público no site da Stone; nada de taxa, prazo ou condição: isso muda por plano e a equipe confere.
+oferta_stone:
+  o_que_e: >-
+    Empresa de tecnologia e serviços financeiros para o empreendedor brasileiro: ajuda a vender, receber e
+    organizar o dinheiro do negócio.
+  oferece:
+    - "maquininha de cartão para receber no débito, no crédito e por aproximação"
+    - "conta para o negócio, com Pix"
+    - "link de pagamento para vender pelo WhatsApp e pelas redes"
+    - "crédito para o negócio, mediante análise"
+    - "atendimento humano para o lojista"
+  nao_oferece:
+    - "valores de taxa, prazo de recebimento ou condição de plano (mudam por plano: não citar números)"
+    - "crédito garantido ou aprovado sem análise"
+    - "promessa de faturamento ou lucro"
+    - "o programa Impulso (educação e mentoria) como se fosse produto da Stone"
+
+# Expressões que o verificador barra por código (texto sem acento, em minúsculas)
+afirmacoes_proibidas:
+  - "pagamento instantaneo"
+  - "dinheiro na conta"
+  - "taxa zero"
+  - "sem taxa"
+  - "credito aprovado"
+  - "credito garantido"
+  - "emprestimo garantido"
+  - "maquininha do impulso"
+
+tom_de_voz:
+  descricao: "Próximo, acolhedor, educativo, encorajador e interativo, com linguagem simples e direta."
+  evitar:
+    - "jargão sem explicação"
+    - "promessas exageradas"
+    - "frase motivacional genérica sem próximo passo"
+
+pilares:
+  - nome: "Educação financeira"
+    temas: ["precificação", "custos", "caixa", "lucro"]
+  - nome: "Gestão e vendas"
+    temas: ["atendimento", "pós-venda", "estratégias comerciais"]
+  - nome: "Histórias reais"
+    temas: ["trajetórias", "desafios", "conquistas"]
+  - nome: "Especialistas"
+    temas: ["oficinas", "mentorias", "orientações"]
+  - nome: "Comunidade"
+    temas: ["convites", "interações", "oportunidades"]
+
+# persona e aprendizados_ads (dados internos) ficam em config/stone_interno.yaml, fora do git.
+
+parceiros_atuais:
+  - {nome: "Rodrigo Finanças", perfil: "rodrigofinancas", segmento: "Educação financeira"}
+  - {nome: "Indianara Corrêa", perfil: "indiacorrea", segmento: "Empreendedorismo e beleza"}
+  - {nome: "Chef Ruth", perfil: "chefrut", segmento: "Gastronomia"}
+  - {nome: "Walter Rodrigues", perfil: "wr_walterrodrigues", segmento: "Moda"}
+  - {nome: "Anderson Jedai", perfil: "oijedai", segmento: "Empreendedorismo social"}
+
+# Usados nos alertas de "publi com concorrente". Cielo entrou em 22/11/2026: apareceu patrocinando um Short do top.
+concorrentes: ["InfinitePay", "PagBank", "Cora", "Cielo", "Mercado Pago", "SumUp", "Rede", "Getnet"]

@@ -1,0 +1,34 @@
+# Sementes do agente de descoberta: contas do ecossistema que mencionam e se relacionam com o público MPE.
+# Aula 1: "Aba 'seguindo' de Stone, Ton, Impulso e Sebrae". Os @ foram conferidos na Graph API em 22/11/2026.
+# As sementes servem só para descobrir perfis; elas não entram no ranking (contas de marca grandes distorcem a métrica).
+instagram:
+  - {perfil: stone, nome: "Stone", conferido: "2026-11-22"}
+  - {perfil: impulsostone, nome: "Impulso Stone", conferido: "2026-11-22"}
+  - {perfil: sebrae, nome: "Sebrae Nacional", conferido: "2026-11-22"}
+  # Ton: pendente. @ton é uma fundação de criptomoedas e @tonbrasil, @tonpagamentos e @ton.br são revendedores.
+  # Confirmar no Instagram qual conta tem o selo de verificado antes de incluir.
+
+# Buscas no YouTube (API oficial, 100 unidades de cota cada; 10 buscas ≈ 10% da cota diária).
+# Os canais encontrados entram como candidatos do YouTube, e os @ do Instagram citados na descrição de cada canal
+# entram como candidatos do Instagram. Variar segmentos reduz o viés de achar só perfis parecidos.
+youtube_buscas:
+  - "dicas para MEI"
+  - "como abrir um pequeno negócio"
+  - "como precificar produtos"
+  - "empreendedorismo feminino"
+  - "confeitaria para vender"
+  - "gestão de salão de beleza"
+  - "como vender roupas pelo instagram"
+  - "marketing para pequenos negócios"
+  - "educação financeira para empreendedores"
+  - "como vender mais no comércio local"
+  # Acrescentadas em 22/11/2026 para cobrir setores ausentes na primeira rodada (a amostra concentrou confeitaria
+  # e salão, reflexo das buscas, não da realidade dos MPEs)
+  - "como montar uma barbearia"
+  - "food truck como começar"
+  - "motorista de aplicativo quanto ganha de verdade"
+  - "eletricista autônomo como cobrar"
+  - "como abrir um pet shop"
+  - "artesanato para vender em casa"
+  - "costureira autônoma como ganhar dinheiro"
+  - "como montar um mercadinho de bairro"

@@ -1,0 +1,13 @@
+# Modelo de config/stone_interno.yaml (dados internos da Stone, fora do git).
+# Copie para config/stone_interno.yaml e preencha com o relatório de persona e o histórico de campanhas.
+# Sem o arquivo, o app funciona: o agente só não usa a persona nem os aprendizados dos anúncios.
+persona:
+  genero: {feminino: 0.0, masculino: 0.0}
+  faixa_etaria: {"18-24": 0.0, "25-34": 0.0, "35-44": 0.0, "45-54": 0.0, "55-64": 0.0, "65+": 0.0}
+  leitura: "Uma frase sobre a faixa etária e o jeito de falar com ela."
+
+aprendizados_ads:
+  funcionou:
+    - {padrao: "Nome do padrão", exemplo: "Peça de exemplo", ctr: 0.0}
+  nao_funcionou:
+    - {padrao: "Frase motivacional genérica", exemplo: "Peça de exemplo", ctr: 0.0}

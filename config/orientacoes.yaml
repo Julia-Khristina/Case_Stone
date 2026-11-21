@@ -1,0 +1,120 @@
+# Temas dos dias SEM data comemorativa na agenda (src/analysis/agenda.py). Curadoria de 23/11/2026.
+# Ideia: nesses dias o post ensina algo que o pequeno empreendedor aplica no mesmo dia, ou apresenta uma
+# ferramenta que ele provavelmente não conhece. Uma ferramenta por semana ("radar de ferramentas").
+#
+# Regras da curadoria:
+# - só ferramentas gratuitas, com versão gratuita ou oficiais do governo/Banco Central;
+# - nenhum produto de concorrente da Stone (config/stone_context.yaml → concorrentes);
+# - cada ferramenta tem o site oficial para a equipe conferir antes de publicar (planos e regras mudam);
+# - temas sem fórmulas nem contas: o verificador do agente barra "custo + 30%" e afins.
+versao: "1"
+
+orientacoes:
+  # Educação financeira
+  - {pilar: "Educação financeira", tema: "Fluxo de caixa: anote entradas e saídas todo dia, do jeito mais simples", rotulo: "fluxo de caixa"}
+  - {pilar: "Educação financeira", tema: "Separe o dinheiro da casa e o do negócio, mesmo sem conta de empresa", rotulo: "separar o dinheiro"}
+  - {pilar: "Educação financeira", tema: "Pró-labore: defina um salário fixo para você e pare de tirar do caixa", rotulo: "pró-labore"}
+  - {pilar: "Educação financeira", tema: "Capital de giro: por que o dinheiro some no fim do mês", rotulo: "capital de giro"}
+  - {pilar: "Educação financeira", tema: "Fiado sem prejuízo: como controlar quem deve e cobrar sem constranger", rotulo: "fiado"}
+  - {pilar: "Educação financeira", tema: "Preço certo: como saber se o preço cobre os custos do negócio", rotulo: "preço certo"}
+  # Gestão e vendas
+  - {pilar: "Gestão e vendas", tema: "Atendimento no WhatsApp que vira venda: responder rápido e com preço claro", rotulo: "atendimento no WhatsApp"}
+  - {pilar: "Gestão e vendas", tema: "Pós-venda: como fazer o cliente voltar sem gastar com anúncio", rotulo: "pós-venda"}
+  - {pilar: "Gestão e vendas", tema: "Foto de produto com o celular: luz, fundo e ângulo", rotulo: "foto de produto"}
+  - {pilar: "Gestão e vendas", tema: "Avaliação negativa: como responder e recuperar o cliente", rotulo: "avaliação negativa"}
+  # Especialistas
+  - {pilar: "Especialistas", tema: "Golpes do Pix e do boleto falso: como proteger o negócio", rotulo: "golpes do Pix"}
+  - {pilar: "Especialistas", tema: "Virar MEI: o que muda e quais direitos o empreendedor ganha", rotulo: "virar MEI"}
+  - {pilar: "Especialistas", tema: "Empréstimo com responsabilidade: quando vale a pena e quando não vale", rotulo: "empréstimo"}
+  # Histórias reais e Comunidade
+  - {pilar: "Histórias reais", tema: "Caso real: como um pequeno negócio organizou o caixa e saiu do aperto", rotulo: "caso real"}
+  - {pilar: "Histórias reais", tema: "Caso real: o primeiro cliente fiel e o que fez ele voltar", rotulo: "caso real"}
+  - {pilar: "Comunidade", tema: "Pergunte aos seguidores: qual é hoje a maior dificuldade do seu negócio?", rotulo: "pergunta à comunidade"}
+  - {pilar: "Comunidade", tema: "Mostre seu negócio: convide os empreendedores a se apresentarem nos comentários", rotulo: "convite"}
+
+ferramentas:
+  - nome: "WhatsApp Business"
+    pilar: "Gestão e vendas"
+    tema: "Ferramenta: WhatsApp Business para mostrar o catálogo e responder mais rápido"
+    resolve: "catálogo de produtos, mensagem automática de ausência e respostas rápidas"
+    custo: "gratuito"
+    fonte: "whatsapp.com/business"
+    segmentos: [todos]
+  - nome: "Perfil da Empresa no Google"
+    pilar: "Gestão e vendas"
+    tema: "Ferramenta: Perfil da Empresa no Google para o cliente achar o negócio no mapa"
+    resolve: "aparecer no Google e no Maps com endereço, horário, fotos e avaliações"
+    custo: "gratuito"
+    fonte: "business.google.com"
+    segmentos: [comercio_bairro, beleza_estetica, alimentacao, pets]
+  - nome: "Meta Business Suite"
+    pilar: "Gestão e vendas"
+    tema: "Ferramenta: agende os posts da semana no Meta Business Suite"
+    resolve: "agendar posts do Instagram e do Facebook e responder mensagens num lugar só"
+    custo: "gratuito"
+    fonte: "business.facebook.com"
+    segmentos: [todos]
+  - nome: "Insights do Instagram"
+    pilar: "Gestão e vendas"
+    tema: "Ferramenta: os Insights do Instagram mostram o que o seu público mais curte"
+    resolve: "ver quais posts e horários funcionam melhor, na própria conta profissional"
+    custo: "gratuito (conta profissional)"
+    fonte: "help.instagram.com"
+    segmentos: [todos]
+  - nome: "Canva"
+    pilar: "Gestão e vendas"
+    tema: "Ferramenta: Canva para fazer post, cardápio e cartão sem saber design"
+    resolve: "modelos prontos de post, cardápio, panfleto e cartão de visita"
+    custo: "versão gratuita"
+    fonte: "canva.com"
+    segmentos: [todos]
+  - nome: "CapCut"
+    pilar: "Gestão e vendas"
+    tema: "Ferramenta: CapCut para editar Reels com legenda automática no celular"
+    resolve: "cortar vídeo, colocar legenda automática e música"
+    custo: "versão gratuita"
+    fonte: "capcut.com"
+    segmentos: [todos]
+  - nome: "Planilha gratuita de fluxo de caixa"
+    pilar: "Educação financeira"
+    tema: "Ferramenta: fluxo de caixa no celular com uma planilha gratuita"
+    resolve: "anotar entradas e saídas e ver quanto sobra no mês (Google Planilhas ou Excel online)"
+    custo: "gratuito"
+    fonte: "google.com/sheets"
+    segmentos: [todos]
+  - nome: "Emissor Nacional de NFS-e"
+    pilar: "Educação financeira"
+    tema: "Ferramenta: nota fiscal de serviço do MEI pelo emissor gratuito do governo"
+    resolve: "emitir nota fiscal de serviço; obrigatório para o MEI prestador de serviço desde setembro de 2023"
+    custo: "gratuito"
+    fonte: "gov.br/nfse"
+    segmentos: [servicos, beleza_estetica, transporte_entregas]
+  - nome: "App MEI"
+    pilar: "Educação financeira"
+    tema: "Ferramenta: App MEI para pagar o DAS e acompanhar a empresa pelo celular"
+    resolve: "emitir a guia do DAS, ver o certificado do MEI e o histórico de pagamentos"
+    custo: "gratuito (governo federal)"
+    fonte: "gov.br/mei"
+    segmentos: [todos]
+  - nome: "Registrato (Banco Central)"
+    pilar: "Educação financeira"
+    tema: "Ferramenta: Registrato, do Banco Central, para ver dívidas e contas no seu nome"
+    resolve: "consultar empréstimos, contas e chaves Pix registrados no seu CPF ou CNPJ"
+    custo: "gratuito"
+    fonte: "registrato.bcb.gov.br"
+    segmentos: [todos]
+  - nome: "Pix Automático"
+    pilar: "Educação financeira"
+    tema: "Ferramenta: Pix Automático para cobrar mensalidade sem lembrar o cliente todo mês"
+    resolve: "cobrança recorrente que o cliente autoriza uma vez (lançado pelo Banco Central em 2025)"
+    custo: "depende do banco; consulte as tarifas"
+    fonte: "bcb.gov.br/pix"
+    segmentos: [servicos, beleza_estetica, pets]
+  - nome: "Assistente de IA gratuito"
+    pilar: "Gestão e vendas"
+    tema: "Ferramenta: assistente de IA gratuito para escrever descrição de produto e responder dúvidas"
+    resolve: "ideias de post, descrição de produto e rascunho de resposta a clientes"
+    custo: "versões gratuitas"
+    fonte: "Meta AI (no WhatsApp), ChatGPT ou Gemini"
+    nota: "revise sempre o texto antes de usar e não coloque dados de clientes"
+    segmentos: [todos]

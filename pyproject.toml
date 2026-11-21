@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "boapauta"
+version = "0.1.0"
+description = "Mapeamento de conteúdo de alto engajamento para MPEs e geração de criativos para o Impulso Stone."
+requires-python = ">=3.11"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests/unit", "tests/integration", "tests/e2e"]
+addopts = "-q"

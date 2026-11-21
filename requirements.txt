@@ -1,0 +1,19 @@
+# App e API
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pydantic>=2.9
+pyyaml>=6.0
+python-dotenv>=1.0
+# Agente
+langgraph>=1.2
+fastmcp>=2.0            # servidor MCP (src/servidor_mcp.py)
+google-genai>=1.0       # camada 2: vídeo no Gemini
+# Análise
+pandas>=2.2
+numpy>=1.26
+scikit-learn>=1.5       # cohen_kappa_score na validação manual
+# Carrossel e playbook
+playwright>=1.49
+pillow>=10.0
+# Testes
+pytest>=9.1

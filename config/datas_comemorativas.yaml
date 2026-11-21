@@ -1,0 +1,75 @@
+# Datas que movimentam o pequeno negócio, para a agenda de posts (src/analysis/agenda.py).
+# Revisado em 23/11/2026: tipos de data, fases, feriados, obrigações do MEI e datas do público do Impulso.
+#
+# tipo (cada um tem regra própria no código):
+#   venda_no_dia  a venda acontece no próprio dia (Black Friday, Dia do Consumidor): o post do dia entra
+#   temporada     a venda acontece ANTES (Natal, Mães, Páscoa, Carnaval...): preparação em fases; no dia,
+#                 agradecimento e convite para voltar; nos dias seguintes, trocas e pós-venda
+#   obrigacao     prazo de pagamento ou declaração (DAS, 13º, DASN-SIMEI): post antes do prazo e no último dia
+#   feriado       comércio fecha ou muda o horário: aviso na véspera; no próprio dia não há post de venda
+#   comunidade    celebração do público (Dia da Mulher, Dia da MPE): história real e convite à comunidade
+# antecedencia_dias: quantos dias antes os posts começam (o empreendedor precisa de tempo para agir).
+# peso: desempate quando várias datas estão ativas (3 = essencial para o público do Impulso, 1 = complementar).
+# Cada data tem uma REGRA, e o código gera a data certa de qualquer ano (não precisa recalcular):
+#   dia: "MM-DD"                 data fixa (Natal: "12-25")
+#   pascoa: N                    N dias depois da Páscoa (Carnaval -47, Sexta-feira Santa -2, Corpus Christi 60)
+#   domingo: {mes, n}            n-ésimo domingo do mês (Dia das Mães: 2º domingo de maio)
+#   quinta: {mes, n} + deslocamento   n-ésima quinta do mês + dias (Black Friday: 4ª quinta de novembro + 1)
+#   data: "AAAA-MM-DD"           ainda aceito para uma data de um ano só
+# O histórico de anúncios do Impulso mostra que datas do calendário funcionam (números em config/stone_interno.yaml).
+versao: "3"
+datas:
+  # ---- vendas e temporadas
+  - {nome: "Black Friday", quinta: {mes: 11, n: 4}, deslocamento: 1, tipo: venda_no_dia, antecedencia_dias: 21, segmentos: [todos], peso: 3}
+  - {nome: "Cyber Monday", quinta: {mes: 11, n: 4}, deslocamento: 4, tipo: venda_no_dia, antecedencia_dias: 4, segmentos: [moda_acessorios, beleza_estetica], peso: 1, nota: "fecha a semana da Black Friday; vendas pela internet e pelo WhatsApp"}
+  - {nome: "Natal", dia: "12-25", tipo: temporada, antecedencia_dias: 30, segmentos: [todos], peso: 3}
+  - {nome: "Réveillon", dia: "12-31", tipo: temporada, antecedencia_dias: 14, segmentos: [alimentacao, beleza_estetica, moda_acessorios], peso: 2}
+  - {nome: "Liquidação de janeiro", dia: "01-15", tipo: venda_no_dia, antecedencia_dias: 12, segmentos: [moda_acessorios, todos], peso: 2, nota: "período de renovar o estoque parado depois das festas"}
+  - {nome: "Volta às aulas", dia: "02-01", tipo: temporada, antecedencia_dias: 21, segmentos: [moda_acessorios, servicos], peso: 2, nota: "período, não data fixa"}
+  - {nome: "Carnaval", pascoa: -47, tipo: temporada, antecedencia_dias: 21, segmentos: [alimentacao, beleza_estetica, moda_acessorios], peso: 2, nota: "terça de Carnaval (ponto facultativo); festas de 6 a 9/2"}
+  - {nome: "Dia do Consumidor", dia: "03-15", tipo: venda_no_dia, antecedencia_dias: 14, segmentos: [todos], peso: 2}
+  - {nome: "Páscoa", pascoa: 0, tipo: temporada, antecedencia_dias: 30, segmentos: [alimentacao], peso: 2}
+  - {nome: "Dia das Mães", domingo: {mes: 5, n: 2}, tipo: temporada, antecedencia_dias: 30, segmentos: [todos], peso: 3, nota: "2º domingo de maio"}
+  - {nome: "Dia dos Namorados", dia: "06-12", tipo: temporada, antecedencia_dias: 21, segmentos: [alimentacao, beleza_estetica, moda_acessorios], peso: 2}
+  - {nome: "Festa Junina", dia: "06-24", tipo: temporada, antecedencia_dias: 30, segmentos: [alimentacao, moda_acessorios], peso: 2, nota: "São João; festas ao longo de junho"}
+  - {nome: "Dia dos Pais", domingo: {mes: 8, n: 2}, tipo: temporada, antecedencia_dias: 21, segmentos: [todos], peso: 3, nota: "2º domingo de agosto"}
+  - {nome: "Dia do Cliente", dia: "09-15", tipo: venda_no_dia, antecedencia_dias: 14, segmentos: [todos], peso: 2}
+  - {nome: "Dia das Crianças", dia: "10-12", tipo: temporada, antecedencia_dias: 21, segmentos: [alimentacao, moda_acessorios, servicos], peso: 2}
+  - {nome: "Halloween", dia: "10-31", tipo: temporada, antecedencia_dias: 14, segmentos: [alimentacao, beleza_estetica, moda_acessorios], peso: 1}
+
+  # ---- obrigações financeiras (pilar Educação financeira)
+  - {nome: "13º salário (1ª parcela)", dia: "11-30", tipo: obrigacao, antecedencia_dias: 10, segmentos: [todos], peso: 3, nota: "prazo legal da 1ª parcela para quem tem funcionário; o cliente também recebe e compra mais"}
+  - {nome: "13º salário (2ª parcela)", dia: "12-20", tipo: obrigacao, antecedencia_dias: 10, segmentos: [todos], peso: 3, nota: "prazo legal da 2ª parcela"}
+  - {nome: "Declaração anual do MEI (DASN-SIMEI)", dia: "05-31", tipo: obrigacao, antecedencia_dias: 30, segmentos: [todos], peso: 3, nota: "prazo anual de 31 de maio"}
+
+  # ---- comunidade e público do Impulso (70% mulheres, 35 a 54 anos)
+  - {nome: "Dia Internacional da Mulher", dia: "03-08", tipo: comunidade, antecedencia_dias: 5, segmentos: [todos], peso: 3}
+  - {nome: "Dia do Comerciante", dia: "07-16", tipo: comunidade, antecedencia_dias: 3, segmentos: [comercio_bairro, todos], peso: 2}
+  - {nome: "Dia da Micro e Pequena Empresa", dia: "10-05", tipo: comunidade, antecedencia_dias: 7, segmentos: [todos], peso: 3}
+  - {nome: "Dia do Empreendedorismo Feminino", dia: "11-19", tipo: comunidade, antecedencia_dias: 5, segmentos: [todos], peso: 3}
+
+  # ---- feriados nacionais (Lei 662/1949 e alterações; Consciência Negra pela Lei 14.759/2023)
+  - {nome: "Feriado de Natal", dia: "12-25", tipo: feriado, antecedencia_dias: 3, segmentos: [todos], peso: 1}
+  - {nome: "Feriado de Ano-Novo", dia: "01-01", tipo: feriado, antecedencia_dias: 3, segmentos: [todos], peso: 2}
+  - {nome: "Feriado da Sexta-feira Santa", pascoa: -2, tipo: feriado, antecedencia_dias: 3, segmentos: [todos], peso: 2}
+  - {nome: "Feriado de Tiradentes", dia: "04-21", tipo: feriado, antecedencia_dias: 3, segmentos: [todos], peso: 2}
+  - {nome: "Feriado do Dia do Trabalho", dia: "05-01", tipo: feriado, antecedencia_dias: 3, segmentos: [todos], peso: 2}
+  - {nome: "Feriado de Corpus Christi", pascoa: 60, tipo: feriado, antecedencia_dias: 3, segmentos: [todos], peso: 2, nota: "ponto facultativo nacional; feriado em muitas cidades"}
+  - {nome: "Feriado da Independência", dia: "09-07", tipo: feriado, antecedencia_dias: 3, segmentos: [todos], peso: 2}
+  - {nome: "Feriado de Nossa Senhora Aparecida", dia: "10-12", tipo: feriado, antecedencia_dias: 3, segmentos: [todos], peso: 1, nota: "mesmo dia do Dia das Crianças"}
+  - {nome: "Feriado de Finados", dia: "11-02", tipo: feriado, antecedencia_dias: 3, segmentos: [todos], peso: 2}
+  - {nome: "Feriado da Proclamação da República", dia: "11-15", tipo: feriado, antecedencia_dias: 3, segmentos: [todos], peso: 2}
+  - {nome: "Feriado da Consciência Negra", dia: "11-20", tipo: feriado, antecedencia_dias: 3, segmentos: [todos], peso: 2}
+
+# Datas que se repetem todo mês (o código gera uma por mês na janela da agenda)
+recorrentes:
+  - {nome: "Vencimento do DAS do MEI", dia_do_mes: 20, tipo: obrigacao, antecedencia_dias: 4, segmentos: [todos], peso: 2, nota: "guia mensal do MEI; se cair em fim de semana ou feriado, vence no dia útil seguinte"}
+
+# Regras da agenda (código, sem LLM)
+regras:
+  segmento_nao_repete_em_dias_seguidos: true
+  todos_os_pilares_por_semana: true
+  sugestoes_por_semana: 5
+  max_posts_por_data_na_semana: 2  # a mesma data não domina a semana; o próprio dia não conta neste limite
+  pular_dias_fracos: true          # salvo se for o próprio dia de uma data de venda, obrigação ou comunidade
+  dias_depois_temporada: 3         # trocas e pós-venda nos dias seguintes a uma temporada

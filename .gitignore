@@ -1,0 +1,41 @@
+# Segredos e cache
+.env
+.cache/
+
+# Cópia completa do Case Suno usada como referência (contém o .env com chave do Groq). Não versionar.
+Case_Suno/
+
+# Documentos internos entregues pela Stone (histórico de Ads, relatório). Não publicar no git sem autorização.
+documentos/
+
+# Dados coletados de terceiros e mídias temporárias
+data/raw/
+data/media/
+data/exports/
+data/processed/
+data/descoberta/
+data/validacao/
+data/fotos/
+data/capas/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+
+# Ferramentas locais
+.claude/
+
+# app React
+app/node_modules/
+data/contas_stone/
+# banco do app (peças aprovadas, guias) e qualquer SQLite local
+data/app/
+# persona e CTR dos anúncios do Impulso (internos da Stone)
+config/stone_interno.yaml
+*.sqlite
+*.sqlite-journal
+# playbook gerado: tem o CTR interno dos anúncios do Impulso e capas de posts de terceiros embutidas
+docs/playbook_stone.html
+app/dist/

@@ -1,0 +1,27 @@
+# Tokens visuais dos slides gerados.
+# Cores amostradas dos criativos do Impulso Stone no histórico de campanhas (documentos/, fev–out 2026).
+# A fonte é a Plus Jakarta Sans (licença OFL), herdada do Case Suno, até termos a fonte oficial do Impulso.
+cores:
+  lima: "#B4F50F"        # fundo de capa e CTA
+  verde: "#00843D"       # fundo de slide de corpo
+  escuro: "#0B1F14"      # fundo de slide de corpo, alternado com o verde
+  branco: "#FFFFFF"
+  tinta: "#0C2A1B"       # texto sobre o limão
+  verde_texto: "#0C5A2E" # assinatura e apoio sobre o limão
+fonte:
+  familia: "Plus Jakarta Sans"
+  arquivos:
+    400: asset/fonts/PlusJakartaSans-400.ttf
+    500: asset/fonts/PlusJakartaSans-500.ttf
+    600: asset/fonts/PlusJakartaSans-600.ttf
+    700: asset/fonts/PlusJakartaSans-700.ttf
+    800: asset/fonts/PlusJakartaSans-800.ttf
+# Sem arquivo de logo: a assinatura é texto. Trocar pelo logo oficial se a Stone fornecer.
+assinatura: "impulso stone"
+slides:
+  largura_px: 1080
+  altura_px: 1350
+  proporcao: "4:5"
+  margem_px: 96
+reels:
+  proporcao: "9:16"

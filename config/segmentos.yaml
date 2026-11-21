@@ -1,0 +1,46 @@
+# Taxonomia dos perfis em dois eixos (decidido em 22/11/2026).
+# Eixo 1, tipo: "transversal" ensina algo que serve a qualquer MPE; "setorial" é dono de um tipo de negócio.
+# Eixo 2, setor: macrossetor (lista fechada, para agrupar e comparar) + nicho (texto livre, preenchido pela IA
+# na camada 1; aqui, pelas regras, é a palavra que casou).
+# Palavras-chave sem acento e em minúsculas, casadas pelo começo da palavra ("confeit" casa "confeitaria").
+# Para exigir a palavra inteira, termine com \b e use aspas simples: 'mei\b' não casa "meio".
+# A Stone pode ajustar esta lista, por exemplo, para seguir a segmentação que já usa com clientes e campanhas.
+versao: "1"
+
+temas_transversais:
+  financas: ["financ", "dinheiro", "contab", "contador", "imposto", "precific", "fluxo de caixa", "credito", 'mei\b']
+  vendas: ["vendas", "vender", "vendedor", "comercial"]
+  marketing: ["marketing", "instagram", "redes sociais", "social media", "trafego", "branding", "conteudo"]
+  gestao: ["gestao", "administra", "lideranca", "processos", "planejamento"]
+  # "empreendedora" sozinho não indica tema: quase toda bio de MPE diz isso
+  empreendedorismo: ["empreendedorismo", "mentor", "consultor"]
+
+macrossetores:
+  alimentacao: ["comida", "restaurante", "confeit", "doce", "bolo", "marmita", "gastronom", "chef", "delivery",
+                "lanche", "padaria", "hamburg", "salgado", "cafeteria", "food"]
+  beleza_estetica: ["salao", "beleza", "unha", "manicure", "cabelo", "estetica", "maquiagem", "barbear",
+                    "sobrancelha", "cilios", "depila"]
+  moda_acessorios: ["moda", "roupa", "brecho", "look", "boutique", "costur", "bijuteria", "calcado", "lingerie"]
+  saude_bem_estar: ["saude", "fitness", "personal", "nutri", "fisioterap", "psicolog", "terapia", "academia"]
+  casa_reparos: ["reforma", "obra", "eletricista", "encanador", "marcenaria", "decoracao", "limpeza", "jardinagem"]
+  servicos_profissionais: ["advoga", "juridico", "consultoria", "fotografia", "design", "arquitet"]
+  educacao_cursos: ["curso", "aula", "professor", "escola", "ensino", "treinamento"]
+  comercio_bairro: ["mercado", "mercearia", "loja de bairro", "papelaria", "farmacia", "conveniencia", "varejo"]
+  transporte_entregas: ["motorista", "uber", "entregador", "motoboy", "frete", "transporte", "logistica"]
+  artesanato_producao: ["artesan", "feito a mao", "croche", "personalizado", "velas"]
+  pets: ["pet", "cachorro", "gato", "banho e tosa", "veterinar"]
+
+# Indicação para parceria: composição dos indicados (os parceiros atuais da Stone já seguem este formato:
+# 2 transversais e 3 setoriais).
+indicacao:
+  transversais: 2
+  setoriais: 3
+  reservas_por_vaga: 1
+  # Macrossetores que a Stone quer priorizar. Vazio = o sistema sugere os setores sem parceiro atual.
+  setores_prioritarios: []
+  faixas_preferidas: [micro, medio]   # engajam mais e soam mais autênticos; "grande" só como reserva
+  nota_minima: 65                     # abaixo disso não indica, mesmo sendo de um setor sem parceiro (22/11/2026)
+  excluir_se:
+    - parceiro_atual        # já é parceiro: serve de régua, não de indicação
+    - publi_concorrente     # parceria paga com InfinitePay, PagBank, Cora (ver config/stone_context.yaml)
+    - conta_de_marca        # empresa ou instituição, não pessoa (ex.: Sebrae, bancos)

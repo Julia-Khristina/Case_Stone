@@ -1,0 +1,18 @@
+# Termos proibidos nos criativos: promessas exageradas e sensacionalismo, que fogem do tom do Impulso.
+# Estrutura herdada do Case Suno ("termos" literais e "padroes" em expressão regular, sem diferenciar maiúsculas).
+termos:
+  - "lucro garantido"
+  - "garantia de lucro"
+  - "dinheiro fácil"
+  - "fique rico"
+  - "enriqueça"
+  - "renda extra garantida"
+  - "sem esforço"
+  - "segredo que ninguém conta"
+  - "imperdível"
+  - "urgente"
+  - "100% garantido"
+padroes:
+  - "\\bganh[ea]r? (muito )?dinheiro (rápido|fácil)\\b"
+  - "\\b(dobr|tripl)\\w* (seu|o) (faturamento|lucro|salário)\\b"
+  - "\\bnunca mais (vai )?(faltar|ter dívida)\\b"

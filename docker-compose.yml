@@ -1,0 +1,14 @@
+# BoaPauta em um container: API + app. Os dados ficam fora da imagem (volume ./data),
+# então a coleta e as análises feitas na máquina aparecem no container sem rebuild.
+services:
+  boapauta:
+    build: .
+    env_file:
+      - .env
+    environment:
+      BOAPAUTA_DB: /srv/data/app/boapauta.sqlite
+    volumes:
+      - ./data:/srv/data
+    ports:
+      - "${BOAPAUTA_PORTA:-8000}:8000"
+    restart: unless-stopped

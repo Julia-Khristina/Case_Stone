@@ -1,0 +1,62 @@
+# Limiares do projeto. Nenhum limiar fica escrito no código: o código falha se uma chave obrigatória faltar.
+# "TAPI" = definido na proposta do case. "provisório" = escolha nossa, a calibrar com os dados.
+
+# --- Base e ranking
+idade_minima_dias: 14            # TAPI: só posts com métricas estabilizadas
+janela_momento_dias: 90          # decidido em 21/11/2026
+janela_anterior_dias: 90         # para calcular a tendência (90–180 dias atrás)
+top_percentil: 0.10              # TAPI: 10% superiores, aqui calculado por plataforma e faixa
+max_posts_por_perfil_no_top: 5   # provisório: impede uma conta viral de dominar o top
+escopo_min_curtidas: 150          # piso: ~a média de curtidas da @stone; abaixo disso o post não concorre (src/analysis/escopo.py)
+ranking_janela: todas             # top e controle sobre os 180 dias coletados (com 14+ dias); "momento" = só 90 dias
+ranking_separar_formato:         # top calculado dentro de cada formato?
+  youtube: true                  # Short e vídeo longo têm dinâmicas de curtida diferentes (achado de 22/11/2026)
+  instagram: false               # Reels, carrossel e imagem na mesma régua: é isso que mostra qual formato engaja mais
+faixas_seguidores:               # aula 1: micro até 10 mil, médio de 10 a 100 mil, grande acima
+  micro_max: 10000
+  medio_max: 100000
+
+# --- Coleta do Instagram
+instagram_chamadas_por_hora: 150     # app em modo de desenvolvimento: ~200/hora na Meta; 150 deixa folga
+
+# --- Agente de descoberta de perfis (provisórios)
+descoberta_seguidores_min: 1000      # abaixo disso costumam ser revendedores ou contas novas
+descoberta_posts_min: 30             # TAPI: atividade regular
+descoberta_dias_sem_postar_max: 60   # nunca maior que a janela de análise: perfil parado não tem posts nela
+descoberta_posts_min_janela:         # posts publicados nos últimos janela_momento_dias (90): o que entra na análise
+  instagram: 6                       # cerca de um a cada duas semanas
+  youtube: 4                         # vídeos saem com menos frequência que posts no Instagram
+descoberta_alvo_por_faixa: 15        # 15 micro + 15 médio + 15 grande = 45 perfis (TAPI: 30+)
+descoberta_max_consultas: 150        # app em modo de desenvolvimento: cerca de 200 chamadas/hora no total;
+                                     # 150 deixa folga. Uma rodada por hora, no máximo.
+
+# --- Descobertas
+n_minimo_formato: 15             # provisório: formato com menos posts não entra na recomendação
+n_confianca_baixa: 10            # provisório: padrão apoiado em menos posts recebe confidence_flag
+validacao_manual_minima: 50      # TAPI
+kappa_minimo_campo: 0.4          # provisório: campo abaixo disso é marcado como pouco confiável
+
+# --- Criativos (checagens determinísticas)
+clareza_flesch_min: 55           # provisório: mesmo alvo do nível Iniciante do Suno; público 35–54 anos
+clareza_guia_min: 50             # guia detalhado (e-mail explicativo): início da faixa "fácil" (50–75) de Martins et al. (1996)
+reescritas_maximas: 2            # herdado do Suno: até 3 tentativas por criativo
+reescrita_similaridade_max: 0.97 # herdado do Suno: reescrita quase igual à anterior encerra o laço
+
+# --- Juiz (herdado do Suno)
+juiz_media_minima: 7.0
+juiz_nota_minima_criterio: 5.0
+juiz_nota_alvo_criterio: 7.0   # abaixo disso o agente reescreve com o retorno do juiz (src/agent/melhoria.py)
+reescritas_pelo_juiz: 1        # cada uma custa 1 geração + 1 avaliação; fica a versão com a nota maior
+
+# --- Scorecard de criadores (pesos ajustáveis pela Stone; a nota é a média ponderada dos percentis)
+scorecard_pesos:
+  consistencia: 25
+  conversa: 20
+  autenticidade: 20
+  marca: 20
+  frequencia: 15
+
+# Camada 2: campos fora dos achados por instabilidade (kappa < kappa_minimo entre o protocolo em lote com trechos e a
+# análise um a um do vídeo inteiro; 20 posts, 23/11/2026). producao 0,35 · tom_de_voz 0,23 · mostra_ferramenta 0,00
+# (90% de concordância, mas classe rara). Continuam gravados nos rótulos, só não viram achado.
+camada2_campos_instaveis: [producao, tom_de_voz, mostra_ferramenta]
