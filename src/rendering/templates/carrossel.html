@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<style>
+$font_faces
+:root {
+  --lima: $lima; --verde: $verde; --escuro: $escuro; --branco: $branco; --tinta: $tinta;
+  --verde-texto: $verde_texto; --m: ${margem}px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: ${largura}px; height: ${altura}px; }
+body { font-family: '$familia', Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+.slide { position: relative; width: ${largura}px; height: ${altura}px; overflow: hidden;
+  display: flex; flex-direction: column; padding: var(--m); }
+.slide.lima { background: var(--lima); color: var(--tinta); }
+.slide.verde { background: var(--verde); color: var(--branco); }
+.slide.escuro { background: var(--escuro); color: var(--branco); }
+
+.topo { display: flex; justify-content: space-between; align-items: flex-start; }
+.assinatura { font-size: 40px; line-height: .86; font-weight: 800; letter-spacing: -.03em; }
+.lima .assinatura { color: var(--verde-texto); }
+.verde .assinatura, .escuro .assinatura { color: var(--lima); }
+.pagina { font-size: 26px; font-weight: 600; letter-spacing: .06em; opacity: .8; }
+
+.miolo { flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 0; }
+.ajuste { overflow: hidden; }   /* o renderizador mede se o texto coube neste campo */
+
+.capa h1 { font-size: 104px; line-height: 1.02; font-weight: 800; letter-spacing: -.035em; max-height: 640px; }
+.capa .apoio { font-size: 38px; line-height: 1.35; font-weight: 500; margin-top: 40px; max-width: 860px;
+  max-height: 260px; color: var(--verde-texto); }
+
+.numero { font-size: 180px; line-height: 1; font-weight: 800; letter-spacing: -.04em; color: var(--lima);
+  margin-bottom: 28px; }
+.corpo h2 { font-size: 76px; line-height: 1.05; font-weight: 800; letter-spacing: -.025em; max-height: 340px; }
+.corpo .texto { font-size: 40px; line-height: 1.4; font-weight: 500; margin-top: 34px; max-height: 420px; opacity: .92; }
+
+.cta h2 { font-size: 84px; line-height: 1.04; font-weight: 800; letter-spacing: -.03em; max-height: 460px; }
+.cta .texto { font-size: 38px; line-height: 1.4; font-weight: 500; margin-top: 30px; max-height: 300px;
+  color: var(--verde-texto); }
+.cta .cta { display: inline-block; align-self: flex-start; margin-top: 52px; background: var(--tinta); color: var(--lima);
+  font-size: 40px; font-weight: 800; padding: 26px 44px; border-radius: 999px; max-height: 160px; }
+
+.rodape { display: flex; justify-content: flex-end; align-items: flex-end; min-height: 40px; }
+.seguir { font-size: 26px; font-weight: 700; letter-spacing: .06em; display: flex; align-items: center; gap: 14px; }
+.seguir::after { content: ""; width: 18px; height: 18px; border-top: 4px solid currentColor;
+  border-right: 4px solid currentColor; transform: rotate(45deg); }
+</style>
+</head>
+<body>
+<div class="slide $tipo $fundo">
+  <div class="topo"><span class="assinatura">$assinatura</span><span class="pagina">$pagina</span></div>
+  <div class="miolo">$miolo</div>
+  <div class="rodape">$seguir</div>
+</div>
+</body>
+</html>
