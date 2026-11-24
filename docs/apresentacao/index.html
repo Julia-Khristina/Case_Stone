@@ -1,0 +1,744 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BoaPauta · Impulso Stone</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --lima:#B4F50F; --verde:#00843D; --escuro:#0B1F14; --escuro2:#122A1C; --fundo:#F4F7F2; --mudo:#8FA898; --linha:#24402F;
+  --texto:#EAF3EC; --alerta:#F5A623;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#050d08;color:var(--texto);font-family:Inter,"Segoe UI",system-ui,sans-serif;overflow:hidden;
+  -webkit-font-smoothing:antialiased;touch-action:pan-y}
+/* palco fixo 1600×900, escalado para caber na tela */
+#palco{position:absolute;left:50%;top:50%;width:1600px;height:900px;transform-origin:center;background:var(--escuro);overflow:hidden;
+  border-radius:6px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.slide{position:absolute;inset:0;padding:80px 96px;opacity:0;visibility:hidden;transform:translateX(40px);
+  transition:opacity .55s ease, transform .55s cubic-bezier(.2,.7,.2,1), visibility 0s .55s}
+.slide.ativo{opacity:1;visibility:visible;transform:none;transition:opacity .55s ease, transform .55s cubic-bezier(.2,.7,.2,1)}
+.slide.antes{transform:translateX(-40px)}
+.sobre{font-size:18px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--lima);margin-bottom:18px}
+h1{font-size:96px;line-height:1;font-weight:900;letter-spacing:-.035em}
+h2{font-size:58px;line-height:1.05;font-weight:850;letter-spacing:-.03em;margin-bottom:24px;max-width:1300px}
+h2 em,h1 em{font-style:normal;color:var(--lima)}
+p.lead{font-size:26px;line-height:1.45;color:#C3D6C9;max-width:1150px}
+.mudo{color:var(--mudo)}
+.chip{display:inline-block;font-size:15px;font-weight:700;padding:6px 14px;border-radius:999px;background:#1C3627;color:#CFE3D4;margin:0 8px 8px 0}
+.chip.lima{background:var(--lima);color:var(--escuro)}
+/* elementos que entram em sequência */
+.entra{opacity:0;transform:translateY(18px);transition:opacity .6s ease, transform .6s cubic-bezier(.2,.7,.2,1)}
+.ativo .entra{opacity:1;transform:none}
+.ativo .entra:nth-child(2){transition-delay:.12s}.ativo .entra:nth-child(3){transition-delay:.24s}
+.ativo .entra:nth-child(4){transition-delay:.36s}.ativo .entra:nth-child(5){transition-delay:.48s}
+.ativo .entra:nth-child(6){transition-delay:.6s}.ativo .entra:nth-child(7){transition-delay:.72s}
+.grade3{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:40px}
+.cartao{background:var(--escuro2);border:1px solid var(--linha);border-radius:22px;padding:34px}
+.cartao h3{font-size:30px;font-weight:800;margin:14px 0 10px}
+.cartao p{font-size:20px;line-height:1.45;color:#B9CDBF}
+.icone{width:58px;height:58px;border-radius:16px;background:var(--lima);color:var(--escuro);display:grid;place-items:center;font-size:30px;font-weight:900}
+/* barra de progresso e navegação */
+#progresso{position:absolute;left:0;bottom:0;height:5px;background:var(--lima);transition:width .5s ease;z-index:5}
+#contador{position:absolute;right:28px;bottom:20px;font-size:15px;color:var(--mudo);font-weight:700;z-index:5;letter-spacing:.06em}
+#marca{position:absolute;left:96px;bottom:22px;font-size:16px;font-weight:800;color:#5E7A68;z-index:5}
+#marca b{color:var(--lima)}
+.nav{position:absolute;top:0;bottom:0;width:90px;z-index:4;cursor:pointer}
+#navEsq{left:0}#navDir{right:0}
+#notas{position:fixed;left:16px;right:16px;bottom:16px;max-width:900px;margin:auto;background:rgba(5,13,8,.94);border:1px solid var(--linha);
+  border-radius:14px;padding:18px 22px;font-size:17px;line-height:1.5;color:#DDE9E0;display:none;z-index:50}
+#notas.on{display:block}
+#ajuda{position:fixed;right:16px;top:12px;font-size:12px;color:#4F6B5A;z-index:50}
+
+/* ---------- capa ---------- */
+.capa{display:flex;flex-direction:column;justify-content:center;padding-left:120px}
+.capa h1{font-size:150px}
+.capa h1 b{color:var(--lima)}
+.capa .lead{font-size:32px;margin-top:22px}
+.mosaico{position:absolute;right:-60px;top:-40px;width:760px;height:980px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;
+  transform:rotate(8deg);opacity:.9}
+.mosaico div{border-radius:18px;background:#173322;background-size:cover;background-position:center;animation:flutua 9s ease-in-out infinite}
+.mosaico div:nth-child(odd){animation-delay:-3s}.mosaico div:nth-child(3n){animation-delay:-5s}
+@keyframes flutua{0%,100%{transform:translateY(0)}50%{transform:translateY(-22px)}}
+.capa .veu{position:absolute;inset:0;background:linear-gradient(90deg,var(--escuro) 38%,rgba(11,31,20,.75) 62%,rgba(11,31,20,.25))}
+.capa > *:not(.mosaico):not(.veu){position:relative}
+
+/* ---------- funil de dados ---------- */
+.funil{display:flex;align-items:flex-end;gap:22px;margin-top:56px;height:430px}
+.degrau{flex:1;display:flex;flex-direction:column;justify-content:flex-end}
+.degrau .barra{background:linear-gradient(180deg,var(--lima),#7FB80B);border-radius:16px 16px 6px 6px;height:0;transition:height 1.1s cubic-bezier(.2,.7,.2,1)}
+.degrau .num{font-size:52px;font-weight:900;letter-spacing:-.03em;margin-bottom:10px}
+.degrau .rot{font-size:18px;color:#B9CDBF;margin-top:14px;line-height:1.35;min-height:50px}
+
+/* ---------- método: grade de pontos ---------- */
+.metodo{display:grid;grid-template-columns:720px 1fr;gap:70px;align-items:center;margin-top:10px}
+#pontos{display:grid;grid-template-columns:repeat(30,1fr);gap:7px}
+#pontos i{aspect-ratio:1;border-radius:50%;background:#28483A;transition:background .4s, transform .4s}
+#pontos i.top{background:var(--lima);transform:scale(1.15)}
+#pontos i.ctl{background:#5AA77A}
+.regras li{font-size:23px;line-height:1.45;margin:0 0 16px 0;list-style:none;padding-left:34px;position:relative;color:#D2E2D7}
+.regras li:before{content:"";position:absolute;left:0;top:11px;width:14px;height:14px;border-radius:4px;background:var(--lima)}
+.formula{font-family:ui-monospace,Consolas,monospace;font-size:21px;background:#0E2417;border:1px solid var(--linha);border-radius:14px;padding:16px 20px;margin:6px 0 22px;color:var(--lima)}
+
+/* ---------- camadas ---------- */
+.camadas{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;margin-top:34px}
+.camada{background:var(--escuro2);border:1px solid var(--linha);border-radius:20px;padding:26px;position:relative;overflow:hidden}
+.camada .n{font-size:15px;font-weight:800;color:var(--lima);letter-spacing:.1em}
+.camada h3{font-size:27px;margin:8px 0 8px}
+.camada p{font-size:17.5px;line-height:1.45;color:#B9CDBF}
+.camada .grande{font-size:44px;font-weight:900;margin-top:14px;letter-spacing:-.02em}
+.camada .grande small{font-size:17px;color:var(--mudo);font-weight:600;letter-spacing:0}
+.fita{margin-top:30px;background:var(--escuro2);border:1px solid var(--linha);border-radius:20px;padding:26px 30px}
+.fita .trilho{position:relative;height:64px;border-radius:12px;background:repeating-linear-gradient(90deg,#1B3526 0 22px,#17301F 22px 44px);margin-top:16px}
+.fita .marca{position:absolute;top:-8px;height:80px;border-radius:12px;border:3px solid var(--lima);background:rgba(180,245,15,.16);
+  opacity:0;transition:opacity .5s}
+.ativo .fita .marca{opacity:1}
+.fita .marca span{position:absolute;bottom:-34px;left:0;font-size:16px;font-weight:800;color:var(--lima);white-space:nowrap}
+.fita .capa-mini{position:absolute;left:-118px;top:-8px;width:96px;height:80px;border-radius:10px;border:3px solid var(--lima);
+  background:url(videos/inicio.jpg) center/cover}
+
+/* ---------- concordância ---------- */
+.kappas{margin-top:30px;display:grid;grid-template-columns:1fr 1fr;gap:12px 70px}
+.kappa{display:grid;grid-template-columns:300px 1fr 70px;align-items:center;gap:18px;font-size:21px}
+.kappa .b{height:18px;background:#1B3526;border-radius:99px;overflow:hidden;position:relative}
+.kappa .b div{height:100%;width:0;border-radius:99px;background:var(--lima);transition:width 1s cubic-bezier(.2,.7,.2,1)}
+.kappa.fora .b div{background:#6C7F72}
+.kappa.fora{color:#7F9686}
+.kappa .v{font-weight:800;text-align:right}
+.limiar{font-size:17px;color:var(--mudo);margin-top:26px}
+
+/* ---------- achados ---------- */
+.achados{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:30px}
+.achado{background:var(--escuro2);border:1px solid var(--linha);border-radius:20px;padding:24px;min-height:220px;display:flex;flex-direction:column}
+.achado .x{font-size:62px;font-weight:900;color:var(--lima);letter-spacing:-.04em;line-height:1}
+.achado.menos .x{color:#8FB5A0;font-size:40px}
+.achado p{font-size:19px;line-height:1.38;margin-top:12px;color:#D2E2D7;flex:1}
+.achado .pe{font-size:14px;color:var(--mudo);margin-top:12px;font-weight:600}
+.plat{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.08em;padding:4px 9px;border-radius:6px;background:#22402F;color:#BFD9C8;margin-bottom:12px;align-self:flex-start}
+
+/* ---------- tensão ---------- */
+.tensao{display:grid;grid-template-columns:1fr 120px 1fr;gap:20px;align-items:stretch;margin-top:40px}
+.lado{border-radius:24px;padding:40px}
+.lado.a{background:var(--lima);color:var(--escuro)}
+.lado.b{background:var(--escuro2);border:1px solid var(--linha)}
+.lado .x{font-size:100px;font-weight:900;letter-spacing:-.05em;line-height:1}
+.lado p{font-size:24px;line-height:1.4;margin-top:12px}
+.versus{display:grid;place-items:center;font-size:40px;font-weight:900;color:var(--mudo)}
+.decisao{margin-top:30px;font-size:26px;background:#0E2417;border-left:6px solid var(--lima);padding:22px 28px;border-radius:12px}
+
+/* ---------- arquitetura ---------- */
+#arq{position:absolute;left:96px;top:262px;width:1562px;height:540px;transform:scale(.88);transform-origin:top left}
+#arq svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+#arq path{fill:none;stroke:#2D5440;stroke-width:2.5;stroke-dasharray:7 9;animation:fluxo 1.4s linear infinite}
+#arq path.on{stroke:var(--lima);stroke-width:3.5}
+@keyframes fluxo{to{stroke-dashoffset:-32}}
+.no{position:absolute;width:212px;min-height:74px;border-radius:16px;background:var(--escuro2);border:2px solid #2B4D3A;padding:12px 16px;
+  cursor:pointer;transition:transform .2s, border-color .2s, background .2s;user-select:none;-webkit-tap-highlight-color:transparent}
+.no:hover{transform:translateY(-3px);border-color:#4E8A68}
+.no.on{border-color:var(--lima);background:#183A26;box-shadow:0 0 0 6px rgba(180,245,15,.15)}
+.no b{display:block;font-size:17px;line-height:1.2}
+.no small{display:block;font-size:13px;color:var(--mudo);margin-top:4px;line-height:1.3}
+.no.fonte{border-style:dashed}
+.no.pessoa{background:#22402B;border-color:#5C9B71}
+.col-rot{position:absolute;top:-38px;font-size:13px;font-weight:800;letter-spacing:.14em;color:#5E7A68;text-transform:uppercase}
+#detalhe{position:absolute;right:40px;top:170px;width:560px;max-height:720px;overflow:auto;background:#09180F;border:2px solid var(--lima);border-radius:22px;
+  padding:30px 32px;transform:translateX(640px);transition:transform .45s cubic-bezier(.2,.7,.2,1);z-index:3}
+#detalhe.on{transform:none}
+#detalhe h3{font-size:32px;font-weight:850;margin-bottom:6px}
+#detalhe .tec{color:var(--lima);font-weight:700;font-size:16px;margin-bottom:18px}
+#detalhe dt{font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--mudo);margin-top:16px}
+#detalhe dd{font-size:19px;line-height:1.45;margin-top:5px;color:#DDE9E0}
+#detalhe .fechar{position:absolute;right:18px;top:14px;background:none;border:0;color:var(--mudo);font-size:34px;cursor:pointer}
+.dica-toque{position:absolute;right:170px;bottom:22px;z-index:6;font-size:17px;color:var(--mudo)}
+.dica-toque b{color:var(--lima)}
+
+/* ---------- agente ---------- */
+.pipeline{display:flex;align-items:stretch;gap:0;margin-top:44px}
+.etapa{flex:1;background:var(--escuro2);border:1px solid var(--linha);padding:26px 22px;border-radius:20px;position:relative}
+.etapa + .etapa{margin-left:42px}
+.etapa + .etapa:before{content:"→";position:absolute;left:-36px;top:50%;transform:translateY(-50%);font-size:30px;color:var(--lima);font-weight:900}
+.etapa .t{font-size:14px;font-weight:800;letter-spacing:.1em;color:var(--lima)}
+.etapa h3{font-size:24px;margin:8px 0}
+.etapa p{font-size:16.5px;line-height:1.45;color:#B9CDBF}
+.etapa.zero{background:var(--lima);color:var(--escuro)}
+.etapa.zero .t{color:var(--verde)}
+.etapa.zero p{color:#1F3A27}
+.checks{display:grid;grid-template-columns:repeat(3,1fr);gap:12px 26px;margin-top:34px}
+.checks div{font-size:20px;color:#D2E2D7}
+.checks div:before{content:"✓";color:var(--lima);font-weight:900;margin-right:10px}
+
+/* ---------- demos com vídeo ---------- */
+.demo{display:grid;grid-template-columns:1fr 400px;gap:44px;align-items:center;height:100%}
+.tela{position:relative;border-radius:18px;overflow:hidden;border:2px solid #2B4D3A;box-shadow:0 30px 70px rgba(0,0,0,.5);background:#000;cursor:pointer}
+.tela video{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
+.tela .barra-nav{height:34px;background:#0E1F15;display:flex;align-items:center;gap:8px;padding:0 14px}
+.tela .barra-nav i{width:11px;height:11px;border-radius:50%;background:#2E4A3A}
+.tela .barra-nav span{margin-left:12px;font-size:13px;color:#6D8A78;font-family:ui-monospace,Consolas,monospace}
+.tela .pausado{position:absolute;inset:34px 0 0;display:none;place-items:center;background:rgba(0,0,0,.35);font-size:70px;color:var(--lima)}
+.tela.pausa .pausado{display:grid}
+.passos{list-style:none;counter-reset:p}
+.passos li{counter-increment:p;font-size:20px;line-height:1.42;margin-bottom:18px;padding-left:52px;position:relative;color:#D2E2D7;
+  transition:color .3s, opacity .3s;opacity:.55}
+.passos li.agora{opacity:1;color:#fff}
+.passos li:before{content:counter(p);position:absolute;left:0;top:-2px;width:36px;height:36px;border-radius:10px;background:#1C3627;color:var(--lima);
+  font-weight:900;display:grid;place-items:center;font-size:18px}
+.passos li.agora:before{background:var(--lima);color:var(--escuro)}
+.demo h2{font-size:44px;margin-bottom:28px}
+
+/* ---------- carrossel e playbook ---------- */
+.esteira{display:flex;gap:22px;margin-top:36px}
+.esteira img{width:236px;border-radius:14px;box-shadow:0 20px 40px rgba(0,0,0,.45);transition:transform .35s}
+.esteira img:hover{transform:translateY(-10px) scale(1.03)}
+.pb{display:grid;grid-template-columns:1fr 640px;gap:60px;align-items:start}
+.pb iframe{width:640px;height:700px;border:0;border-radius:18px;background:var(--fundo);box-shadow:0 30px 70px rgba(0,0,0,.5)}
+
+/* ---------- engenharia ---------- */
+.numeros{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;margin-top:34px}
+.numeros div{background:var(--escuro2);border:1px solid var(--linha);border-radius:20px;padding:26px}
+.numeros b{display:block;font-size:56px;font-weight:900;color:var(--lima);letter-spacing:-.03em}
+.numeros span{font-size:18px;color:#B9CDBF;line-height:1.4}
+.achou{margin-top:30px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:22px}
+.achou div{border-left:5px solid var(--alerta);background:#151F12;border-radius:10px;padding:18px 20px;font-size:18px;line-height:1.45;color:#E6E0CC}
+.achou b{color:#FFD27A}
+.lista{list-style:none;margin-top:26px}
+.lista li{font-size:23px;line-height:1.45;margin-bottom:18px;padding-left:36px;position:relative;color:#D2E2D7}
+.lista li:before{content:"—";position:absolute;left:0;color:var(--lima);font-weight:900}
+.lista li b{color:#fff}
+.duas{display:grid;grid-template-columns:1fr 1fr;gap:70px}
+.fim{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding-left:120px;
+  background:radial-gradient(circle at 80% 30%,rgba(180,245,15,.18),transparent 45%),var(--escuro)}
+.fim h1{font-size:120px}
+</style>
+</head>
+<body>
+<div id="palco">
+
+<!-- 1 · capa -->
+<section class="slide capa" data-notas="Abrir com a pergunta da Stone: o que faz o pequeno empreendedor parar para ver um post? O BoaPauta responde com dados, transforma a resposta em post e aponta quem pode ser embaixador.">
+  <div class="mosaico" id="mosaico"></div>
+  <div class="veu"></div>
+  <div class="sobre entra">Projeto Stone × Inteli Academy · 24/11/2026</div>
+  <h1 class="entra">Boa<b>Pauta</b></h1>
+  <p class="lead entra">O que engaja o empreendedor vira post do Impulso Stone.<br>Análise de Instagram e YouTube, posts gerados com evidência e criadores para parceria.</p>
+</section>
+
+<!-- 2 · desafio -->
+<section class="slide" data-notas="Três perguntas que o Impulso faz toda semana. Hoje cada uma é respondida no feeling. O projeto responde as três com a mesma base de dados.">
+  <div class="sobre entra">O desafio</div>
+  <h2 class="entra">O Impulso precisa falar com quem toca o próprio negócio, <em>do jeito que esse público engaja</em>.</h2>
+  <div class="grade3">
+    <div class="cartao entra"><div class="icone">?</div><h3>O que engaja?</h3><p>Tema, gancho, formato, quem aparece no vídeo. Com evidência, não com impressão.</p></div>
+    <div class="cartao entra"><div class="icone">✎</div><h3>Como virar post?</h3><p>Do achado ao roteiro pronto para revisar, sem a equipe começar do zero toda semana.</p></div>
+    <div class="cartao entra"><div class="icone">★</div><h3>Quem chamar?</h3><p>Criadores que o público do Impulso já escuta, com nota explicada e alertas visíveis.</p></div>
+  </div>
+</section>
+
+<!-- 3 · base -->
+<section class="slide" data-acao="funil" data-notas="Tudo pelas APIs oficiais, sem scraping, como o TAPI pede. Descoberta automática pelo YouTube porque a Graph API remove as menções das legendas. Revisão humana na aprovação dos perfis.">
+  <div class="sobre entra">A base</div>
+  <h2 class="entra">Dados reais, <em>só por APIs oficiais</em>, dos últimos 6 meses.</h2>
+  <div class="funil" id="funil">
+    <div class="degrau"><div class="num" data-n="candidatos">0</div><div class="barra" data-h="100"></div><div class="rot">candidatos achados pelo agente de descoberta</div></div>
+    <div class="degrau"><div class="num" data-n="perfis">0</div><div class="barra" data-h="44"></div><div class="rot">perfis aprovados em revisão humana</div></div>
+    <div class="degrau"><div class="num" data-n="posts">0</div><div class="barra" data-h="88"></div><div class="rot">posts coletados (Instagram + YouTube)</div></div>
+    <div class="degrau"><div class="num" data-n="elegiveis">0</div><div class="barra" data-h="74"></div><div class="rot">posts elegíveis (14+ dias, métricas estáveis)</div></div>
+    <div class="degrau"><div class="num" data-n="analisados">0</div><div class="barra" data-h="30"></div><div class="rot">top 10% + controle dentro do escopo, lidos pela IA</div></div>
+  </div>
+</section>
+
+<!-- 4 · método -->
+<section class="slide" data-acao="pontos" data-notas="O ponto central do método: não basta olhar os posts que deram certo. Comparamos com um grupo controle do mesmo tamanho. Só vira achado o que aparece mais no top, com intervalo de confiança e em pelo menos 3 perfis diferentes.">
+  <div class="sobre entra">O método</div>
+  <h2 class="entra">Comparar o top com um <em>grupo controle</em>, nunca olhar só o que deu certo.</h2>
+  <div class="metodo">
+    <div class="entra"><div id="pontos"></div>
+      <p class="mudo" style="margin-top:16px;font-size:17px"><span style="color:var(--lima)">●</span> top 10%  &nbsp; <span style="color:#5AA77A">●</span> controle (sorteado, mesmo tamanho)  &nbsp; ● demais posts</p></div>
+    <div class="entra">
+      <div class="formula">engajamento = (curtidas + comentários) ÷ seguidores</div>
+      <ul class="regras">
+        <li>Top separado por <b>plataforma e faixa de seguidores</b>: perfil pequeno não concorre com grande</li>
+        <li>No máximo <b>5 posts por perfil</b> no top: um viral não domina</li>
+        <li>Lift com <b>intervalo de confiança de 90%</b> (bootstrap)</li>
+        <li>Achado só com lift acima de 1,1 e em <b>3 ou mais perfis</b></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 5 · camadas -->
+<section class="slide" data-notas="Quatro camadas de leitura. A camada 2 é a novidade: o Gemini vê capa, início, meio e fim de cada vídeo. O mesmo recorte para Short, Reels e vídeo longo deixa a comparação justa, e 17 posts por pedido cabem na cota gratuita.">
+  <div class="sobre entra">Como cada post é lido</div>
+  <h2 class="entra">Quatro camadas, do número ao que <em>se vê no vídeo</em>.</h2>
+  <div class="camadas">
+    <div class="camada entra"><div class="n">CAMADA 0</div><h3>Métricas</h3><p>Engajamento, lift sobre a média do próprio perfil, faixas, top e controle.</p><div class="grande" data-n="elegiveis2">0<small> posts</small></div></div>
+    <div class="camada entra"><div class="n">CAMADA 1 · GROQ</div><h3>Texto</h3><p>Tema, gancho, chamada para ação, tom, frase genérica, publi. Saída validada por Pydantic.</p><div class="grande" data-n="texto">0<small> posts</small></div></div>
+    <div class="camada entra"><div class="n">CAMADA 2 · GEMINI</div><h3>Vídeo e imagem</h3><p>Quem aparece, rosto e fala nos 3 s, cenário, texto na tela, chamada final.</p><div class="grande" data-n="visual">0<small> posts</small></div></div>
+    <div class="camada entra"><div class="n">CAMADA 3 · HUMANA</div><h3>Validação</h3><p>Planilha às cegas e kappa de Cohen; concordância entre protocolos da camada 2.</p><div class="grande">κ<small> ≥ 0,4 para virar achado</small></div></div>
+  </div>
+  <div class="fita entra">
+    <b style="font-size:20px">Protocolo único para qualquer vídeo</b> <span class="mudo" style="font-size:18px"> · capa + início (0–5 s) + 5 s do meio + últimos 5 s · vários posts por pedido</span>
+    <div class="trilho" style="margin-left:130px">
+      <div class="capa-mini"></div>
+      <div class="marca" style="left:0;width:7%"><span>início · gancho</span></div>
+      <div class="marca" style="left:46%;width:7%;transition-delay:.25s"><span>meio · cenário, quem aparece</span></div>
+      <div class="marca" style="left:93%;width:7%;transition-delay:.5s"><span style="left:auto;right:0">fim · chamada</span></div>
+    </div>
+    <div style="height:30px"></div>
+  </div>
+</section>
+
+<!-- 6 · concordância -->
+<section class="slide" data-acao="kappas" data-notas="Quando passamos a mandar 17 posts por pedido e só trechos do vídeo, medimos se o rótulo muda. Os campos objetivos bateram de 85 a 100%. Produção e tom de voz mudaram demais e saíram dos achados. Preferimos ter menos achados do que achados frágeis.">
+  <div class="sobre entra">Confiabilidade</div>
+  <h2 class="entra">O que não se sustenta, <em>sai</em>.</h2>
+  <p class="lead entra">20 posts analisados duas vezes: um a um com o vídeo inteiro, e no protocolo final (lote de 17, trechos).</p>
+  <div class="kappas entra" id="kappas"></div>
+  <p class="limiar entra">Mínimo do projeto: kappa 0,4. Produção, tom de voz e "mostra ferramenta" (classe rara) ficam gravados, mas não viram achado.</p>
+</section>
+
+<!-- 7 · achados -->
+<section class="slide" data-notas="Os achados que passaram em todas as regras. Destaque: finanças é o tema que mais engaja no Instagram, e gravar em casa engaja mais do que estúdio. No YouTube, promessa e link aparecem menos nos vídeos que mais engajam.">
+  <div class="sobre entra">O que engaja agora</div>
+  <h2 class="entra">Achados com evidência, <em>por plataforma</em>.</h2>
+  <div class="achados entra" id="achados"></div>
+</section>
+
+<!-- 8 · tensão -->
+<section class="slide" data-notas="O dado mais interessante para discutir com a Stone. Frase motivacional engaja no orgânico, mas o histórico de anúncios do Impulso mostra que ela não gera clique. Decisão: o achado aparece para a equipe, mas não orienta a criação.">
+  <div class="sobre entra">Um ponto para discutir</div>
+  <h2 class="entra">Engajar não é o mesmo que <em>converter</em>.</h2>
+  <div class="tensao entra">
+    <div class="lado a"><div class="x">7,1×</div><p><b>Frase motivacional genérica</b> aparece 7,1 vezes mais nos posts que mais engajam no Instagram (5 perfis).</p></div>
+    <div class="versus">×</div>
+    <div class="lado b"><div class="x" style="color:#8FB5A0">0,77%</div><p>É o <b>CTR da frase motivacional</b> nos anúncios do Impulso, o menor do histórico. Convite à participação: <b>8,82%</b>.</p></div>
+  </div>
+  <div class="decisao entra"><b>Decisão no produto:</b> o achado aparece no Início, mas o gerador não usa frase motivacional. A equipe vê a tensão e decide.</div>
+</section>
+
+<!-- 9 · arquitetura -->
+<section class="slide" id="slideArq" data-notas="Arquitetura completa. Tocar em cada bloco mostra o que ele faz, a tecnologia, os dados e por que foi escolhido. Vale abrir: Descoberta, Camada 2, Agente e Servidor MCP.">
+  <div class="sobre entra">Arquitetura</div>
+  <h2 class="entra" style="font-size:46px">Do post público à peça aprovada.</h2>
+  <div class="dica-toque entra">Toque em um bloco para <b>ver o detalhe</b></div>
+  <div id="arq" class="entra"></div>
+  <div id="detalhe"><button class="fechar" aria-label="Fechar">×</button><div id="detalheCorpo"></div></div>
+</section>
+
+<!-- 10 · agente -->
+<section class="slide" data-notas="O agente em LangGraph. O detalhe que mais importa para a Stone: a proposta não gasta IA. O modelo só roda quando alguém clica em Criar este post. Depois, conferências objetivas no código, reescrita guiada e um juiz com outro modelo. No fim, sempre uma pessoa aprova.">
+  <div class="sobre entra">O agente por dentro</div>
+  <h2 class="entra">IA só quando vale, e <em>conferida em cada passo</em>.</h2>
+  <div class="pipeline">
+    <div class="etapa zero entra"><div class="t">0 TOKENS</div><h3>Proposta</h3><p>Formato em alta, padrões e posts reais de referência, direto da base.</p></div>
+    <div class="etapa entra"><div class="t">GROQ · GPT-OSS-120B</div><h3>Geração</h3><p>Parte de um caso concreto e do que os posts de referência dizem; cada passo com o como fazer.</p></div>
+    <div class="etapa entra"><div class="t">CÓDIGO</div><h3>7 conferências</h3><p>Falhou? Volta com a instrução exata. Até 2 reescritas.</p></div>
+    <div class="etapa entra"><div class="t">GROQ · QWEN 3.8</div><h3>Juiz</h3><p>Outra família de modelo; 7 critérios, entre eles profundidade.</p></div>
+    <div class="etapa entra"><div class="t">EQUIPE STONE</div><h3>Aprovar ou ajustar</h3><p>Cada ajuste gera nova versão; a anterior e o motivo ficam no histórico.</p></div>
+  </div>
+  <div class="checks entra">
+    <div>Baseado em posts reais da base</div><div>Parte de um caso concreto</div><div>Termina com um próximo passo claro</div><div>Sem promessa exagerada</div>
+    <div>Fiel ao que o Impulso oferece</div><div>Linguagem simples (Flesch pt-BR)</div><div>Tamanho certo para o formato</div>
+  </div>
+</section>
+
+<!-- 11 · demo início -->
+<section class="slide" data-video="v1" data-notas="Vídeo real, gravado no app rodando. A espera da geração foi acelerada 4 vezes; nada foi editado no conteúdo.">
+  <div class="demo">
+    <div class="tela entra"><div class="barra-nav"><i></i><i></i><i></i><span>localhost:8000 · Início</span></div>
+      <video id="v1" src="videos/inicio.mp4" poster="videos/inicio.jpg" muted playsinline preload="auto"
+        data-marcos="0,7,15,22,34,56"></video><div class="pausado">❚❚</div></div>
+    <div>
+      <div class="sobre entra">Ao vivo · Início</div>
+      <h2 class="entra">Do achado ao post, em um minuto.</h2>
+      <ol class="passos entra" data-video="v1">
+        <li>Números da base e o que engaja agora</li>
+        <li>"Ver exemplos": os posts reais por trás de cada achado</li>
+        <li>O objetivo do post em uma frase</li>
+        <li>Proposta sem IA: formato, padrões, referências</li>
+        <li>"Criar este post": geração, conferências e juiz</li>
+        <li>Peça pronta para revisar, com nota e motivos</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- 12 · demo agenda -->
+<section class="slide" data-video="v2" data-notas="A Agenda sugere duas semanas de posts sem repetir segmento, com datas comemorativas e horários de referência. Mostra também o pedido de ajuste com motivo e o playbook da semana.">
+  <div class="demo">
+    <div class="tela entra"><div class="barra-nav"><i></i><i></i><i></i><span>localhost:8000 · Agenda</span></div>
+      <video id="v2" src="videos/agenda.mp4" poster="videos/agenda.jpg" muted playsinline preload="auto"
+        data-marcos="0,5,13,22,36,52"></video><div class="pausado">❚❚</div></div>
+    <div>
+      <div class="sobre entra">Ao vivo · Agenda</div>
+      <h2 class="entra">Duas semanas planejadas, sem repetir.</h2>
+      <ol class="passos entra" data-video="v2">
+        <li>Sugestões por dia: Black Friday, Cyber Monday, Natal</li>
+        <li>"Por que este dia": data, pilar, rodízio, horário</li>
+        <li>A peça já criada, com slides para baixar</li>
+        <li>"Pedir ajuste" com motivo: nova versão em segundos</li>
+        <li>Aprovação registrada no histórico</li>
+        <li>Playbook da semana pronto para o e-mail</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- 13 · carrossel -->
+<section class="slide" data-notas="Saída final de uma peça de carrossel: PNG 1080 por 1350 no visual do Impulso, prontos para publicar depois da aprovação. Renderizados com Playwright.">
+  <div class="sobre entra">Do roteiro à arte</div>
+  <h2 class="entra">Carrossel aprovado vira <em>PNG no visual Impulso</em>.</h2>
+  <div class="esteira entra" id="esteira"></div>
+  <p class="mudo entra" style="margin-top:28px;font-size:19px">1080 × 1350 · renderizado no navegador (Playwright) · gerado a partir da peça aprovada, sem edição manual</p>
+</section>
+
+<!-- 14 · playbook -->
+<section class="slide" data-notas="O playbook é o conteúdo aprofundado das peças aprovadas na semana. Sai em HTML pronto para a ferramenta de e-mail da Stone. O sistema nunca guarda e-mails. Cada seção passa pelas mesmas conferências dos posts.">
+  <div class="pb">
+    <div>
+      <div class="sobre entra">Toda sexta</div>
+      <h2 class="entra">O playbook que <em>aprofunda o post</em>.</h2>
+      <ul class="lista entra">
+        <li><b>Uma seção por peça aprovada:</b> passo a passo, exemplo prático, erro comum, como o Impulso ajuda</li>
+        <li><b>Mesmas conferências</b> dos posts: nada de promessa nem de "maquininha" atribuída ao Impulso</li>
+        <li><b>Dicas da base</b> para o empreendedor usar no próprio Instagram</li>
+        <li><b>A Stone envia</b> pela própria ferramenta; o BoaPauta não guarda e-mails</li>
+      </ul>
+    </div>
+    <iframe class="entra" src="playbook_exemplo.html" title="Playbook de exemplo" loading="lazy"></iframe>
+  </div>
+</section>
+
+<!-- 15 · demo criadores -->
+<section class="slide" data-video="v3" data-notas="Criadores: nota de 0 a 100 em cinco dimensões, sempre comparando com perfis da mesma plataforma e faixa. A composição é ajustável: quantos transversais, quantos setoriais e quais setores priorizar. Parceiros atuais e quem fez publi de concorrente ficam de fora, com o motivo visível.">
+  <div class="demo">
+    <div class="tela entra"><div class="barra-nav"><i></i><i></i><i></i><span>localhost:8000 · Criadores</span></div>
+      <video id="v3" src="videos/criadores.mp4" poster="videos/criadores.jpg" muted playsinline preload="auto"
+        data-marcos="0,4,9,17,22"></video><div class="pausado">❚❚</div></div>
+    <div>
+      <div class="sobre entra">Ao vivo · Criadores</div>
+      <h2 class="entra">Quem chamar, com a nota explicada.</h2>
+      <ol class="passos entra" data-video="v3">
+        <li>2 transversais + 3 setoriais, cada um com reserva</li>
+        <li>Cinco dimensões: consistência, conversa, autenticidade, marca, frequência</li>
+        <li>Composição ajustável e setores prioritários</li>
+        <li>Todos os 52 perfis no radar, com filtros e alertas</li>
+        <li>Perfil: de onde vem cada ponto da nota</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- 16 · engenharia -->
+<section class="slide" data-notas="Decisão do projeto: nada simulado. Testar com as APIs e os modelos reais encontrou problemas que o teste com modelo falso nunca acharia. Exemplos reais desta semana.">
+  <div class="sobre entra">Engenharia</div>
+  <h2 class="entra">Testado de verdade, <em>sem simular nada</em>.</h2>
+  <div class="numeros entra">
+    <div><b data-n="testes">0</b><span>testes automáticos (unidade e integração)</span></div>
+    <div><b>3</b><span>formas de usar o agente: app, API REST e servidor MCP</span></div>
+    <div><b>100%</b><span>das gerações registradas (entrada, ferramentas, posts citados, latência)</span></div>
+    <div><b>0</b><span>tokens gastos em ideia descartada (proposta antes da IA)</span></div>
+  </div>
+  <div class="achou entra">
+    <div><b>Juiz aprovou erro de conta:</b> "multiplique por 1,2 para 20% de margem" (isso é markup). Agora o gerador não ensina fórmulas, e a aprovação humana é obrigatória.</div>
+    <div><b>Um vídeo derrubava o lote:</b> o Gemini devolvia 403 para um vídeo público. Achado por busca binária e isolado.</div>
+    <div><b>Cenas viravam uma só:</b> o modelo mandava as cenas num único objeto. O normalizador separa, e as reescritas voltaram a funcionar.</div>
+  </div>
+</section>
+
+<!-- 17 · limitações e próximos -->
+<section class="slide" data-notas="Transparência sobre os limites. E os próximos passos que dependem da Stone: com a conta oficial na Graph API, entram os insights dos próprios posts do Impulso, e o ciclo fecha com o resultado real de cada peça publicada.">
+  <div class="sobre entra">Com transparência</div>
+  <div class="duas">
+    <div class="entra"><h2 style="font-size:44px">Limites de hoje</h2>
+      <ul class="lista">
+        <li><b>Reels com música licenciada</b> não entregam o vídeo pela API: ficam fora da camada 2</li>
+        <li><b>Curtidas ocultas</b> e comentários de terceiros não vêm pela Graph API</li>
+        <li><b>Cotas gratuitas</b> (Groq e Gemini) limitam o volume diário</li>
+        <li><b>Validação humana</b> dos rótulos de texto ainda em andamento</li>
+      </ul></div>
+    <div class="entra"><h2 style="font-size:44px">Próximos passos</h2>
+      <ul class="lista">
+        <li><b>Conta oficial do Impulso</b> na Graph API: alcance, salvamentos e cliques dos próprios posts</li>
+        <li><b>Fechar o ciclo:</b> peça publicada → resultado real → volta para os padrões</li>
+        <li><b>Rodada semanal automática</b> de coleta, leitura e playbook</li>
+        <li><b>Teste A/B</b> entre peças com e sem cada padrão</li>
+      </ul></div>
+  </div>
+</section>
+
+<!-- 18 · fim -->
+<section class="slide fim" data-notas="Encerrar convidando para testar o app ao vivo.">
+  <div class="sobre entra">Perguntas e conversa</div>
+  <h1 class="entra">Boa<em>Pauta</em></h1>
+  <p class="lead entra" style="margin-top:24px">Dados públicos, método claro, IA conferida e uma pessoa sempre no controle.<br>Vamos testar ao vivo?</p>
+</section>
+
+<div class="nav" id="navEsq"></div><div class="nav" id="navDir"></div>
+<div id="marca">Boa<b>Pauta</b> · Impulso Stone</div>
+<div id="contador"></div>
+<div id="progresso"></div>
+</div>
+<div id="notas"></div>
+<div id="ajuda">← → navegar · F tela cheia · N notas · toque nas laterais</div>
+
+<script>
+/* ======== DADOS (atualize aqui; nada abaixo precisa mudar) ======== */
+const DADOS = {
+  candidatos: 600, perfis: 56, posts: 4043, elegiveis: 3352, analisados: 135, elegiveis2: 740, texto: 135, visual: 126,
+  testes: 139,
+  kappas: [ // campo, concordância, kappa, fica?
+    ["Rosto nos 3 primeiros s", 1.00, 1.00, true], ["Fala nos 3 primeiros s", 1.00, 1.00, true],
+    ["Texto na tela no início", 1.00, 1.00, true], ["Chamada no final", .90, .85, true],
+    ["Fala escrita na tela", .90, .78, true], ["Cenário", .85, .77, true], ["Gancho visual", .85, .74, true],
+    ["Quem aparece", .90, .56, true], ["Produção", .70, .35, false], ["Tom de voz", .55, .23, false]],
+  achados: [ // plataforma, lift (null = menos), frase, perfis · base depois da limpeza de escopo (24/11)
+    ["INSTAGRAM", "7,0×", "<b>Música de fundo</b>, baixa, por baixo da fala", 4],
+    ["INSTAGRAM", "7,0×", "Fala em tom <b>calmo e acolhedor</b>", 4],
+    ["INSTAGRAM", "6,0×", "Gravado no <b>negócio de verdade</b>", 4],
+    ["INSTAGRAM", null, "Gancho de <b>promessa</b> aparece menos no top", 6],
+    ["YOUTUBE", "2,1×", "Tema <b>finanças</b>: caixa, preço, dívidas", 5],
+    ["YOUTUBE", "1,4×", "Música <b>baixa, por baixo da fala</b>", 10],
+    ["YOUTUBE", "só no top", "Chamada pedindo para <b>comentar</b>", 4],
+    ["YOUTUBE", null, "Chamada <b>para link</b> aparece menos no top", 7]],
+  carrossel: ["slide_01.png","slide_02.png","slide_03.png","slide_04.png","slide_05.png","slide_06.png"]
+};
+
+/* ======== ARQUITETURA: blocos, ligações e detalhes ======== */
+const NOS = [
+ {id:"ig", x:0, y:60, cls:"fonte", t:"Instagram Graph API", s:"Business Discovery", col:"Fontes",
+  tec:"API oficial da Meta · v27", o:"Lê posts públicos de contas profissionais: legenda, curtidas, comentários, mídia.",
+  d:"1.711 posts de 20 perfis nos últimos 90 dias.", p:"O TAPI exclui scraping. Limite de ~200 chamadas/hora: limitador em 150/h, parada no limite e retomada."},
+ {id:"yt", x:0, y:200, cls:"fonte", t:"YouTube Data API v3", s:"canais, vídeos, Shorts",
+  tec:"API oficial do Google", o:"Lista canais e vídeos; Shorts aproximados por duração (até 180 s).",
+  d:"2.332 vídeos de 35 canais.", p:"Busca (100 unidades) só na descoberta; coleta em lotes de 50 vídeos (1 unidade)."},
+ {id:"ctx", x:0, y:400, cls:"fonte", t:"Contexto Stone", s:"oferta, tom, datas, horários",
+  tec:"YAML versionado", o:"O que o Impulso oferece e não oferece, tom, pilares, afirmações proibidas, datas comemorativas e horários de referência.",
+  d:"config/stone_context.yaml, datas_comemorativas.yaml, horarios.yaml.", p:"A IA só atribui ao Impulso o que está em \"oferece\": nada de maquininha ou crédito garantido."},
+ {id:"desc", x:270, y:0, t:"Agente de descoberta", s:"YouTube → @ do Instagram", col:"Coleta e leitura",
+  tec:"Python · YouTube + Graph API", o:"18 buscas no YouTube, extrai o @ do Instagram das descrições, confere se o perfil é ativo e tem posts suficientes.",
+  d:"600 candidatos → 56 perfis aprovados por uma pessoa; recusas registradas.", p:"A Graph API apaga as menções (@) das legendas de terceiros. O YouTube traz o @ nas descrições."},
+ {id:"col", x:270, y:115, t:"Coleta", s:"JSONL por data, cache",
+  tec:"requests · cache versionado", o:"Coleta 90 dias de cada perfil aprovado, com paginação, cache e retomada.",
+  d:"4.043 posts em data/raw/2026-11-22.", p:"Retomada sem perder nada quando bate o limite da Meta."},
+ {id:"c0", x:270, y:230, t:"Camada 0 · métricas", s:"pandas",
+  tec:"pandas · numpy", o:"Engajamento, lift sobre a média do perfil, faixas de seguidores, top 10% e grupo controle (semente fixa).",
+  d:"3.352 elegíveis; 740 dentro do escopo (orientam o empreendedor, 150+ curtidas, sem tema sensível); 68 top, 67 controle.", p:"Separar por plataforma e faixa: a taxa de engajamento cai quando os seguidores sobem."},
+ {id:"c1", x:270, y:345, t:"Camada 1 · texto", s:"Groq · gpt-oss-20b",
+  tec:"Groq · Pydantic · cliente do Case Suno", o:"Rótulos de tema, gancho, chamada, tom, frase genérica e publi, em lotes validados.",
+  d:"135 de 135 posts do top e do controle, mais o rótulo de escopo (orienta o empreendedor? tema sensível?).", p:"Cliente herdado com cache, limite de tokens por minuto e espera no 429."},
+ {id:"c2", x:270, y:460, t:"Camada 2 · vídeo", s:"Gemini 3.5 Flash",
+  tec:"Gemini · Files API · YouTube por link", o:"Capa + início (0–5 s) + 5 s do meio + últimos 5 s de cada vídeo; 17 posts por pedido.",
+  d:"126 de 135 posts com vídeo e áudio: quem aparece, cenário, música, volume, tom e ritmo da fala (9 Reels com música licenciada sem arquivo na API).", p:"O plano gratuito limita pedidos por dia, não tokens: lotes de 17 posts por pedido. Links do Instagram renovados antes da análise."},
+ {id:"pad", x:560, y:170, t:"Padrões", s:"top × controle", col:"Inteligência",
+  tec:"bootstrap · lift · IC 90%", o:"Compara cada característica entre top e controle.",
+  d:"Achado só com lift > 1,1 (ou < 0,9) e em 3+ perfis; o resto aparece como inconclusivo.", p:"Evita confundir viral isolado com padrão."},
+ {id:"score", x:560, y:310, t:"Scorecard", s:"criadores e indicação",
+  tec:"percentil por plataforma e faixa", o:"Nota 0–100: consistência, conversa, autenticidade (vídeo), marca, frequência.",
+  d:"52 criadores; indicação 2 transversais + 3 setoriais + reservas.", p:"Parceiro atual e publi de concorrente ficam fora, com o motivo visível."},
+ {id:"agenda", x:560, y:450, t:"Agenda", s:"datas, rodízio, horários",
+  tec:"Python · YAML", o:"Duas semanas de sugestões: data comemorativa, pilar, segmento sem repetir, formato e horário.",
+  d:"Horários de pesquisas públicas (Opinion Box, Buffer, Sprout Social 2026).", p:"Horário é orientação para a equipe, não regra."},
+ {id:"agente", x:850, y:170, t:"Agente", s:"LangGraph", col:"Agente",
+  tec:"LangGraph · Groq gpt-oss-120b (gerador) e qwen3.8-27b (juiz)", o:"Nós: dados → gerar → conferir → reescrever → juiz. Ferramentas: query_stats, format_trends, search_posts, creator_scorecard, load_stone_context.",
+  d:"Cada execução registrada em agent_runs.jsonl.", p:"Proposta antes da IA: zero token em ideia descartada."},
+ {id:"juiz", x:850, y:310, t:"Conferências + juiz", s:"7 regras + rubrica",
+  tec:"código + qwen3.8-27b", o:"Conferências objetivas no código (incluindo caso concreto); juiz de outra família de modelo, com 7 critérios: profundidade pune conselho óbvio.",
+  d:"Até 2 reescritas com a instrução exata de correção.", p:"O código decide o que é objetivo; o juiz avalia o que é de julgamento."},
+ {id:"render", x:850, y:450, t:"Renderizador", s:"carrossel em PNG",
+  tec:"Playwright · HTML", o:"Transforma o carrossel aprovado em PNG 1080×1350 no visual Impulso.",
+  d:"Download direto na peça.", p:"Herdado do Case Suno, com o visual do Impulso."},
+ {id:"api", x:1140, y:120, t:"API", s:"FastAPI + SQLite", col:"Produto",
+  tec:"FastAPI · Uvicorn · SQLite", o:"21 rotas: proposta, peças, ajuste, agenda, criadores, convites, playbook, slides.",
+  d:"Peças, versões, decisões e playbooks guardados com histórico.", p:"SQLite vem com o Python: roda em qualquer máquina sem servidor de banco."},
+ {id:"mcp", x:1140, y:260, t:"Servidor MCP", s:"FastMCP",
+  tec:"Model Context Protocol", o:"Expõe run_agent, padroes e posts_de_referencia para qualquer cliente MCP.",
+  d:"Testado por stdio.", p:"A Stone pode usar o agente de dentro de um assistente de IA, sem abrir o app."},
+ {id:"pb", x:1140, y:400, t:"Playbook semanal", s:"HTML de e-mail",
+  tec:"Groq + conferências de texto", o:"Seção aprofundada por peça aprovada, dicas da base e temas da próxima semana.",
+  d:"Pronto para a ferramenta de e-mail da Stone.", p:"Nenhum e-mail é guardado pelo sistema."},
+ {id:"app", x:1350, y:120, cls:"pessoa", t:"App React", s:"Início · Agenda · Criadores", col:"Pessoas",
+  tec:"React 18 · Vite", o:"Três páginas com modais e subpáginas: pouca navegação, tudo a dois cliques.",
+  d:"Visual Impulso, funciona no celular.", p:"Interface enxuta: a equipe não se perde."},
+ {id:"equipe", x:1350, y:300, cls:"pessoa", t:"Equipe Stone", s:"aprova, ajusta, publica",
+  tec:"revisão humana", o:"Nada é publicado sem \"Aprovar\". Cada ajuste tem motivo registrado.",
+  d:"Histórico completo de versões e decisões.", p:"A IA propõe; a pessoa decide."},
+ {id:"emp", x:1350, y:440, cls:"pessoa", t:"Empreendedores", s:"redes do Impulso + e-mail",
+  tec:"Instagram · YouTube · e-mail", o:"Recebem posts curtos nas redes e o playbook aprofundado por e-mail.",
+  d:"Conteúdo baseado no que já engaja esse público.", p:"O objetivo final: mais empreendedores no Impulso."},
+];
+const LIGA = [["ig","desc"],["yt","desc"],["ig","col"],["yt","col"],["desc","col"],["col","c0"],["c0","c1"],["c0","c2"],
+  ["c1","pad"],["c2","pad"],["c0","score"],["c2","score"],["ctx","agenda"],["ctx","agente"],["pad","agente"],["score","api"],
+  ["agenda","api"],["agente","juiz"],["juiz","api"],["juiz","render"],["render","api"],["agente","mcp"],["api","app"],
+  ["api","pb"],["app","equipe"],["pb","equipe"],["equipe","emp"]];
+
+/* ======== montagem ======== */
+const palco = document.getElementById("palco");
+const slides = [...document.querySelectorAll(".slide")];
+let atual = 0;
+
+function escalar(){
+  const s = Math.min(innerWidth / 1600, innerHeight / 900);
+  palco.style.transform = `translate(-50%,-50%) scale(${s})`;
+}
+addEventListener("resize", escalar); escalar();
+
+// capa: mosaico com criativos reais do histórico do Impulso
+(function(){
+  const imgs = ["06","07","08","10","11","12","13","14","15","18"];
+  const m = document.getElementById("mosaico");
+  for (let i = 0; i < 20; i++){
+    const d = document.createElement("div");
+    d.style.height = (150 + (i * 53) % 110) + "px";
+    d.style.backgroundImage = `url(../img/historico/criativo_${imgs[i % imgs.length]}.jpg)`;
+    m.appendChild(d);
+  }
+})();
+
+// pontos do método (330 = top + controle; 30 × 12 = 360 posts em escala)
+(function(){
+  const p = document.getElementById("pontos");
+  for (let i = 0; i < 360; i++) p.appendChild(document.createElement("i"));
+})();
+function animarPontos(){
+  const pts = [...document.querySelectorAll("#pontos i")];
+  pts.forEach(e => e.className = "");
+  const ordem = pts.map((_, i) => i).sort(() => Math.random() - .5);
+  ordem.slice(0, 36).forEach((i, k) => setTimeout(() => pts[i].classList.add("top"), 300 + k * 35));
+  ordem.slice(36, 72).forEach((i, k) => setTimeout(() => pts[i].classList.add("ctl"), 1700 + k * 30));
+}
+
+// achados
+document.getElementById("achados").innerHTML = DADOS.achados.map(([pl, x, f, n]) =>
+  `<div class="achado ${x ? "" : "menos"}"><span class="plat">${pl}</span><div class="x">${x || "menos"}</div><p>${f}</p><div class="pe">${n} perfis${n < 4 ? " · concentrado" : ""}</div></div>`).join("");
+
+// kappas
+document.getElementById("kappas").innerHTML = DADOS.kappas.map(([c, a, k, fica]) =>
+  `<div class="kappa ${fica ? "" : "fora"}"><span>${c}</span><div class="b"><div data-w="${Math.max(k, 0) * 100}"></div></div><span class="v">${k.toFixed(2).replace(".", ",")}</span></div>`).join("");
+
+// carrossel
+document.getElementById("esteira").innerHTML = DADOS.carrossel.map(f => `<img src="img/carrossel_${f}" alt="">`).join("");
+
+// arquitetura
+(function(){
+  const arq = document.getElementById("arq");
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  arq.appendChild(svg);
+  const W = 212, H = 74;
+  NOS.forEach(n => {
+    if (n.col){ const r = document.createElement("div"); r.className = "col-rot"; r.style.left = n.x + "px"; r.textContent = n.col; arq.appendChild(r); }
+    const d = document.createElement("div");
+    d.className = "no " + (n.cls || ""); d.style.left = n.x + "px"; d.style.top = n.y + "px"; d.dataset.id = n.id;
+    d.innerHTML = `<b>${n.t}</b><small>${n.s}</small>`;
+    d.addEventListener("click", e => { e.stopPropagation(); abrirNo(n.id); });
+    arq.appendChild(d);
+  });
+  LIGA.forEach(([a, b]) => {
+    const A = NOS.find(n => n.id === a), B = NOS.find(n => n.id === b);
+    const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    let x1, y1, x2, y2;
+    if (Math.abs(A.x - B.x) < 10){ x1 = A.x + W / 2; y1 = A.y + H; x2 = B.x + W / 2; y2 = B.y; p.setAttribute("d", `M${x1},${y1} L${x2},${y2}`); }
+    else { x1 = A.x + W; y1 = A.y + H / 2; x2 = B.x; y2 = B.y + H / 2; const m = (x1 + x2) / 2;
+      p.setAttribute("d", `M${x1},${y1} C${m},${y1} ${m},${y2} ${x2},${y2}`); }
+    p.dataset.a = a; p.dataset.b = b; svg.appendChild(p);
+  });
+})();
+const detalhe = document.getElementById("detalhe");
+function abrirNo(id){
+  const n = NOS.find(x => x.id === id);
+  document.querySelectorAll(".no").forEach(e => e.classList.toggle("on", e.dataset.id === id));
+  document.querySelectorAll("#arq path").forEach(p => p.classList.toggle("on", p.dataset.a === id || p.dataset.b === id));
+  document.getElementById("detalheCorpo").innerHTML = `<h3>${n.t}</h3><div class="tec">${n.tec}</div>
+    <dl><dt>O que faz</dt><dd>${n.o}</dd><dt>Dados</dt><dd>${n.d}</dd><dt>Por que assim</dt><dd>${n.p}</dd></dl>`;
+  detalhe.classList.add("on");
+}
+function fecharNo(){
+  detalhe.classList.remove("on");
+  document.querySelectorAll(".no, #arq path").forEach(e => e.classList.remove("on"));
+}
+detalhe.querySelector(".fechar").addEventListener("click", e => { e.stopPropagation(); fecharNo(); });
+document.getElementById("slideArq").addEventListener("click", e => { if (!e.target.closest("#detalhe, .no")) fecharNo(); });
+
+/* ======== animações por slide ======== */
+function contar(el, alvo){
+  const t0 = performance.now(), dur = 1300;
+  const passo = t => { const k = Math.min(1, (t - t0) / dur), v = Math.round(alvo * (1 - Math.pow(1 - k, 3)));
+    el.firstChild.nodeValue = v.toLocaleString("pt-BR"); if (k < 1) requestAnimationFrame(passo); };
+  requestAnimationFrame(passo);
+}
+function aoEntrar(s){
+  s.querySelectorAll("[data-n]").forEach(e => { if (!e.firstChild) e.textContent = "0"; contar(e, DADOS[e.dataset.n]); });
+  if (s.dataset.acao === "funil") s.querySelectorAll(".barra").forEach((b, i) => setTimeout(() => b.style.height = b.dataset.h * 2.6 + "px", 150 + i * 120));
+  if (s.dataset.acao === "pontos") animarPontos();
+  if (s.dataset.acao === "kappas") s.querySelectorAll(".kappa .b div").forEach((b, i) => setTimeout(() => b.style.width = b.dataset.w + "%", 300 + i * 80));
+  const v = s.dataset.video && document.getElementById(s.dataset.video);
+  if (v){ v.currentTime = 0; v.play().catch(() => {}); v.parentElement.classList.remove("pausa"); }
+}
+function aoSair(s){
+  if (s.dataset.acao === "funil") s.querySelectorAll(".barra").forEach(b => b.style.height = "0");
+  if (s.dataset.acao === "kappas") s.querySelectorAll(".kappa .b div").forEach(b => b.style.width = "0");
+  s.querySelectorAll("video").forEach(v => v.pause());
+  if (s.id === "slideArq") fecharNo();
+}
+
+// vídeos: clique pausa/retoma; o passo atual acende conforme o tempo
+document.querySelectorAll(".tela").forEach(t => t.addEventListener("click", e => {
+  e.stopPropagation(); const v = t.querySelector("video");
+  if (v.paused){ v.play(); t.classList.remove("pausa"); } else { v.pause(); t.classList.add("pausa"); }
+}));
+document.querySelectorAll("video").forEach(v => {
+  const marcos = v.dataset.marcos.split(",").map(Number);
+  const lis = [...document.querySelectorAll(`.passos[data-video="${v.id}"] li`)];
+  v.addEventListener("timeupdate", () => {
+    let k = 0; marcos.forEach((m, i) => { if (v.currentTime >= m) k = i; });
+    lis.forEach((li, i) => li.classList.toggle("agora", i === k));
+  });
+  v.addEventListener("ended", () => { v.currentTime = 0; v.play(); });
+});
+
+/* ======== navegação ======== */
+function ir(n){
+  n = Math.max(0, Math.min(slides.length - 1, n));
+  if (n === atual && slides[n].classList.contains("ativo")) return;
+  const velho = slides[atual];
+  velho.classList.remove("ativo"); aoSair(velho);
+  slides.forEach((s, i) => s.classList.toggle("antes", i < n));
+  atual = n; const s = slides[n];
+  s.classList.add("ativo"); aoEntrar(s);
+  document.getElementById("progresso").style.width = ((n + 1) / slides.length * 100) + "%";
+  document.getElementById("contador").textContent = `${String(n + 1).padStart(2, "0")} / ${slides.length}`;
+  document.getElementById("notas").textContent = s.dataset.notas || "";
+  try { history.replaceState(null, "", "#" + (n + 1)); } catch (e) {}
+}
+addEventListener("keydown", e => {
+  if (["ArrowRight", "PageDown", " ", "Enter"].includes(e.key)){ e.preventDefault(); ir(atual + 1); }
+  else if (["ArrowLeft", "PageUp", "Backspace"].includes(e.key)){ e.preventDefault(); ir(atual - 1); }
+  else if (e.key === "Home") ir(0); else if (e.key === "End") ir(slides.length - 1);
+  else if (e.key.toLowerCase() === "f"){ document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen().catch(() => {}); }
+  else if (e.key.toLowerCase() === "n") document.getElementById("notas").classList.toggle("on");
+  else if (e.key === "Escape") fecharNo();
+});
+document.getElementById("navEsq").addEventListener("click", () => ir(atual - 1));
+document.getElementById("navDir").addEventListener("click", () => ir(atual + 1));
+// toque: deslizar para os lados troca de slide (toques dentro da arquitetura abrem o detalhe)
+let x0 = null, y0 = null;
+addEventListener("touchstart", e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, {passive: true});
+addEventListener("touchend", e => {
+  if (x0 === null) return;
+  const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+  if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) ir(atual + (dx < 0 ? 1 : -1));
+  x0 = null;
+}, {passive: true});
+
+const inicial = parseInt((location.hash || "#1").slice(1), 10) - 1;
+slides.forEach(s => s.classList.remove("ativo"));
+atual = isNaN(inicial) ? 0 : Math.max(0, Math.min(slides.length - 1, inicial));
+slides[atual].classList.add("ativo"); slides.forEach((s, i) => s.classList.toggle("antes", i < atual));
+aoEntrar(slides[atual]);
+document.getElementById("progresso").style.width = ((atual + 1) / slides.length * 100) + "%";
+document.getElementById("contador").textContent = `${String(atual + 1).padStart(2, "0")} / ${slides.length}`;
+document.getElementById("notas").textContent = slides[atual].dataset.notas || "";
+</script>
+</body>
+</html>

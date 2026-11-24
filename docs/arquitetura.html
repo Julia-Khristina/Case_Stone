@@ -1,0 +1,1383 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BoaPauta</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: faixas alternadas (verde-floresta escuro / claro), passos visuais primeiro, detalhe técnico depois; mockups em molduras de app */
+:root{
+  --bg:#f5f9f2; --surface:#ffffff; --surface-2:#edf4e8; --ink:#0c2a1b; --muted:#4b6656; --line:#d5e3d0;
+  --lime:#b4f50f; --on-lime:#0c2a1b; --forest:#00843d; --forest-deep:#053b22; --forest-ink:#eafbe0;
+  --ai:#6a4cf5; --ai-soft:#ece8ff; --human:#b56f00; --human-soft:#fbefd8; --bad:#c22a2a; --bad-soft:#fde6e4;
+  --data:#0f6aa8; --data-soft:#e2eff9; --code:#3d5446; --code-soft:#e8efe9;
+  --f-display:"Sora","Segoe UI",system-ui,sans-serif;
+  --f-body:"DM Sans","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#07140d; --surface:#0d1f15; --surface-2:#13291c; --ink:#e7f5e9; --muted:#9cb8a5; --line:#21402d;
+  --forest:#33c46f; --forest-deep:#031a0e; --forest-ink:#eafbe0;
+  --ai:#ab98ff; --ai-soft:#221c45; --human:#f3b54e; --human-soft:#352711; --bad:#ff8077; --bad-soft:#3a1715;
+  --data:#6cb6ee; --data-soft:#11283a; --code:#b5c9bb; --code-soft:#18291f;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#07140d; --surface:#0d1f15; --surface-2:#13291c; --ink:#e7f5e9; --muted:#9cb8a5; --line:#21402d;
+  --forest:#33c46f; --forest-deep:#031a0e; --forest-ink:#eafbe0;
+  --ai:#ab98ff; --ai-soft:#221c45; --human:#f3b54e; --human-soft:#352711; --bad:#ff8077; --bad-soft:#3a1715;
+  --data:#6cb6ee; --data-soft:#11283a; --code:#b5c9bb; --code-soft:#18291f;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-body)}
+img{max-width:100%;display:block}
+[hidden]{display:none!important}
+h1,h2,h3,h4{font-family:var(--f-display);line-height:1.15;text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(2.2rem,5.4vw,3.9rem);font-weight:800;letter-spacing:-.03em}
+h2{font-size:clamp(1.6rem,3.2vw,2.35rem);font-weight:700;letter-spacing:-.02em}
+h3{font-size:1.2rem;font-weight:700}
+h4{font-size:1rem;font-weight:600}
+p{margin:0}
+code{font-family:var(--f-mono);font-size:.84em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+a{color:var(--forest)}
+:focus-visible{outline:3px solid var(--lime);outline-offset:2px}
+.band{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:72px}
+.band.dark{background:var(--forest-deep);color:var(--forest-ink)}
+.band.alt{background:var(--surface-2)}
+.wrap{max-width:1180px;margin:0 auto;display:grid;gap:28px}
+.kicker{display:inline-flex;align-items:center;gap:8px;font:600 .74rem/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--forest)}
+.dark .kicker{color:var(--lime)}
+.kicker::before{content:"";width:18px;height:3px;border-radius:2px;background:currentColor}
+.lead{font-size:1.1rem;color:var(--muted);max-width:66ch}
+.dark .lead{color:#b9d8c3}
+.hl{background:var(--lime);color:var(--on-lime);padding:0 .18em;border-radius:6px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.sec-head{display:grid;gap:10px}
+.small{font-size:.86rem}
+.muted{color:var(--muted)}
+
+/* nav */
+.topnav{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--forest-deep);border-bottom:1px solid rgba(255,255,255,.08);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--forest-deep)}
+.topnav .in{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:18px;height:56px;overflow-x:auto;scrollbar-width:none}
+.wordmark{font:800 1.02rem/.9 var(--f-display);color:var(--lime);letter-spacing:-.03em;white-space:nowrap}
+.wordmark small{display:block;font-size:.66rem;color:var(--forest-ink);font-weight:600;letter-spacing:.02em;margin-top:2px}
+.topnav a{color:#cfe8d6;text-decoration:none;font-size:.88rem;white-space:nowrap;padding:6px 2px;border-bottom:2px solid transparent}
+.topnav a:hover{color:var(--lime);border-color:var(--lime)}
+
+/* hero */
+.hero{padding-block:64px 72px}
+.hero .wrap{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);align-items:center;gap:48px}
+.hero h1 .hl{padding:0 .12em}
+.hero-meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+.chip-d{font-size:.84rem;border:1px solid rgba(180,245,15,.35);color:var(--forest-ink);padding:7px 12px;border-radius:999px}
+.chip-d b{color:var(--lime);font-weight:600}
+.collage{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;transform:rotate(-2deg)}
+.collage figure{margin:0;border-radius:14px;overflow:hidden;position:relative;aspect-ratio:2/3;background:#0a2a18;box-shadow:0 14px 30px -14px rgba(0,0,0,.6)}
+.collage figure:nth-child(3n+2){transform:translateY(22px)}
+.collage img{width:100%;height:100%;object-fit:cover}
+.collage figcaption{position:absolute;left:8px;bottom:8px;font:600 .7rem/1 var(--f-mono);background:var(--lime);color:var(--on-lime);padding:5px 7px;border-radius:6px}
+.src{font-size:.78rem;color:#9cc2a9}
+
+/* steps */
+.steps5{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;position:relative}
+.step5{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px 18px;display:grid;gap:10px;align-content:start;position:relative;min-width:0}
+.step5 .ico{width:46px;height:46px;border-radius:14px;background:var(--lime);display:grid;place-items:center;color:var(--on-lime)}
+.step5 .ico svg{width:24px;height:24px}
+.step5 .num{position:absolute;top:18px;right:18px;font:700 .8rem/1 var(--f-mono);color:var(--muted)}
+.step5 p{font-size:.92rem;color:var(--muted)}
+.step5 .out{font-size:.8rem;border-top:1px dashed var(--line);padding-top:10px;color:var(--ink)}
+.step5 .out b{font-weight:600;color:var(--forest)}
+.tags{display:flex;flex-wrap:wrap;gap:5px}
+.tg{font:500 .7rem/1 var(--f-mono);padding:5px 7px;border-radius:6px;background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
+
+/* learnings gallery */
+.learn{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px}
+.learn-col{display:grid;gap:14px;align-content:start}
+.learn-h{display:flex;align-items:center;gap:10px}
+.learn-h .dot{width:12px;height:12px;border-radius:50%}
+.gal{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.cr{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:grid}
+.cr .img{aspect-ratio:2/3;overflow:hidden;background:var(--surface-2)}
+.cr img{width:100%;height:100%;object-fit:cover}
+.cr figcaption{padding:9px 10px 11px;display:grid;gap:4px}
+.cr .ctr{font:700 1.25rem/1 var(--f-display);font-variant-numeric:tabular-nums}
+.cr.good .ctr{color:var(--forest)}
+.cr.bad .ctr{color:var(--bad)}
+.cr .ctr small{font:500 .66rem/1 var(--f-mono);color:var(--muted);margin-left:4px}
+.cr .t{font-size:.78rem;line-height:1.3}
+.lesson{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-size:.9rem;display:grid;gap:4px}
+.lesson b{font-family:var(--f-display)}
+
+/* architecture diagram */
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.84rem;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.sw{width:14px;height:14px;border-radius:5px;border:2px solid}
+.sw.data{background:var(--data-soft);border-color:var(--data)}
+.sw.code{background:var(--code-soft);border-color:var(--code)}
+.sw.ai{background:var(--ai-soft);border-color:var(--ai)}
+.sw.human{background:var(--human-soft);border-color:var(--human)}
+.sw.out{background:var(--lime);border-color:var(--forest)}
+.reuse{display:inline-flex;align-items:center;gap:4px;font:600 .64rem/1 var(--f-mono);color:var(--forest);background:var(--surface);border:1px solid var(--forest);border-radius:5px;padding:3px 5px;white-space:nowrap}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:20px;border:1px solid var(--line);background:var(--surface)}
+.diag{min-width:1150px;padding:24px;display:grid;gap:16px}
+.lanes{display:grid;grid-template-columns:repeat(7,1fr);gap:24px}
+.lane{display:flex;flex-direction:column;gap:8px;position:relative}
+.lane:not(:last-child)::after{content:"";position:absolute;right:-19px;top:46%;border:7px solid transparent;border-left:10px solid var(--forest);opacity:.8}
+.lane-h{display:flex;align-items:center;gap:8px;font:700 .82rem/1.2 var(--f-display);padding-bottom:8px}
+.lane-h i{font-style:normal;width:24px;height:24px;border-radius:50%;background:var(--forest-deep);color:var(--lime);display:grid;place-items:center;font:700 .74rem/1 var(--f-mono)}
+.nd{border:2px solid;border-radius:12px;padding:8px 10px;font-size:.78rem;line-height:1.3;display:grid;gap:3px}
+.nd b{font-weight:600;font-size:.82rem}
+.nd span{color:var(--muted);font-size:.72rem}
+.nd.data{background:var(--data-soft);border-color:var(--data)}
+.nd.code{background:var(--code-soft);border-color:var(--code)}
+.nd.ai{background:var(--ai-soft);border-color:var(--ai)}
+.nd.human{background:var(--human-soft);border-color:var(--human)}
+.nd.out{background:var(--lime);border-color:var(--forest);color:var(--on-lime)}
+.nd.out span{color:#2d5a3f}
+.nd.opt{border-style:dashed}
+.rail{display:grid;grid-template-columns:repeat(7,1fr);gap:24px}
+.rail div{border-radius:12px;padding:10px 14px;font-size:.8rem;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.rail .ctx{grid-column:1/7;background:var(--forest-deep);color:var(--forest-ink)}
+.rail .ctx b{color:var(--lime)}
+.rail .obs{grid-column:1/8;border:1.5px dashed var(--line);color:var(--muted)}
+.rail .obs b{color:var(--ink)}
+
+/* suno reuse */
+.reuse-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.rcol{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;display:grid;gap:12px;align-content:start;min-width:0}
+.rcol .rh{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.rcol .badge{font:700 .72rem/1 var(--f-mono);padding:6px 9px;border-radius:999px}
+.b-keep{background:var(--lime);color:var(--on-lime)}
+.b-adapt{background:var(--data-soft);color:var(--data)}
+.b-new{background:var(--ai-soft);color:var(--ai)}
+.b-drop{background:var(--surface-2);color:var(--muted)}
+.rcol ul{margin:0;padding:0;list-style:none;display:grid;gap:9px}
+.rcol li{font-size:.86rem;display:grid;gap:2px}
+.rcol li code{justify-self:start;font-size:.74rem}
+.rcol li span{color:var(--muted);font-size:.8rem}
+.meter{display:grid;gap:8px}
+.meter .bar{height:14px;border-radius:7px;overflow:hidden;display:flex;background:var(--surface-2)}
+.meter .bar i{display:block;height:100%}
+.decis{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.dcard{border-radius:16px;padding:16px 18px;background:var(--forest-deep);color:var(--forest-ink);display:grid;gap:6px}
+.dcard b{color:var(--lime);font-family:var(--f-display)}
+.dcard p{font-size:.88rem;color:#b9d8c3}
+
+/* agent */
+.agent{min-width:1080px;padding:26px;display:grid;grid-template-columns:150px 130px 1fr 200px 150px;gap:20px;align-items:center}
+.stack{display:grid;gap:10px}
+.modes{display:grid;gap:7px}
+.mode{display:grid;grid-template-columns:160px 1fr;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:8px 11px;background:var(--surface-2);font-size:.8rem}
+.mode.opt{border-style:dashed;background:transparent}
+.mode b{font:600 .78rem/1.2 var(--f-mono)}
+.seq{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.seq i{font-style:normal;color:var(--muted)}
+.tl{font:500 .7rem/1 var(--f-mono);padding:4px 6px;border-radius:6px;border:1px solid}
+.tl.c{color:var(--code);border-color:var(--code);background:var(--code-soft)}
+.tl.a{color:var(--ai);border-color:var(--ai);background:var(--ai-soft)}
+.loop{border:2px dashed var(--forest);border-radius:16px;padding:12px;display:grid;gap:8px;position:relative}
+.loop::before{content:"até 2 reescritas";position:absolute;top:-10px;left:12px;background:var(--surface);padding:0 6px;font:600 .68rem/1.4 var(--f-mono);color:var(--forest)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px 20px;display:grid;gap:10px;align-content:start;min-width:0}
+.card p{font-size:.92rem;color:var(--muted)}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 .7rem/1.2 var(--f-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+tr:last-child td{border-bottom:0}
+.num{font-variant-numeric:tabular-nums;text-align:right}
+pre.code{margin:0;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:14px 16px;overflow-x:auto;font:400 .78rem/1.55 var(--f-mono);color:var(--ink)}
+pre.code .k{color:var(--ai)} pre.code .s{color:var(--forest)} pre.code .c{color:var(--muted)}
+
+/* creative examples */
+.cre-row{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,.8fr) minmax(0,.85fr);gap:18px;align-items:start}
+.carousel{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x mandatory}
+.slide{flex:0 0 200px;aspect-ratio:4/5;border-radius:12px;padding:16px;display:flex;flex-direction:column;justify-content:space-between;scroll-snap-align:start;position:relative;overflow:hidden}
+.slide.l{background:var(--lime);color:#0c2a1b}
+.slide.g{background:#00843d;color:#fff}
+.slide.k{background:#0b1f14;color:#fff}
+.slide .pg{font:600 .62rem/1 var(--f-mono);opacity:.75;display:flex;justify-content:space-between}
+.slide h5{margin:0;font:800 1.18rem/1.08 var(--f-display);letter-spacing:-.02em}
+.slide p{font-size:.72rem;line-height:1.35}
+.slide .wm{font:800 .72rem/.85 var(--f-display);letter-spacing:-.03em}
+.slide.l .wm{color:#0c5a2e}
+.slide .n{font:800 2.6rem/1 var(--f-display);color:var(--lime)}
+.slide .cta{background:#0c2a1b;color:var(--lime);font:700 .72rem/1 var(--f-display);padding:8px 10px;border-radius:999px;align-self:flex-start}
+.phone{border:1px solid var(--line);border-radius:30px;padding:10px;background:var(--surface-2);max-width:250px;justify-self:center;width:100%}
+.reel{aspect-ratio:9/16;border-radius:22px;background:linear-gradient(170deg,#0b3b22 0%,#0b1f14 60%);color:#fff;position:relative;overflow:hidden;padding:14px;display:flex;flex-direction:column;justify-content:space-between}
+.reel .hook{font:800 1.05rem/1.15 var(--f-display);background:var(--lime);color:#0c2a1b;padding:6px 8px;border-radius:8px;align-self:flex-start;margin-top:30px}
+.reel .tl2{display:grid;gap:5px;font-size:.68rem}
+.reel .tl2 div{display:grid;grid-template-columns:44px 1fr;gap:6px;background:rgba(255,255,255,.08);border-radius:7px;padding:5px 7px}
+.reel .tl2 b{font-family:var(--f-mono);color:var(--lime);font-weight:500}
+.meta-card{display:grid;gap:10px}
+.meta-card .row{display:grid;grid-template-columns:90px 1fr;gap:10px;font-size:.84rem;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.meta-card .row:last-child{border-bottom:0}
+.meta-card .row span:first-child{font:500 .72rem/1.5 var(--f-mono);color:var(--muted)}
+.refs{display:flex;flex-wrap:wrap;gap:5px}
+.refs span{font:500 .7rem/1 var(--f-mono);padding:4px 6px;border-radius:6px;background:var(--surface-2);border:1px solid var(--line)}
+.pill{font:600 .68rem/1 var(--f-mono);padding:5px 8px;border-radius:999px;display:inline-block;white-space:nowrap}
+.pill.ok{background:var(--lime);color:var(--on-lime)}
+.pill.warn{background:var(--human-soft);color:var(--human)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.info{background:var(--data-soft);color:var(--data)}
+.pill.ai{background:var(--ai-soft);color:var(--ai)}
+.flow9{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.flow9 span{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:7px 12px;font-size:.84rem}
+.flow9 span.ai{border-color:var(--ai);color:var(--ai)}
+.flow9 span.h{border-color:var(--human);color:var(--human)}
+.flow9 i{font-style:normal;color:var(--forest);font-weight:700}
+
+/* ambassadors */
+.amb{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
+.ab{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:grid;min-width:0}
+.ab .ph{aspect-ratio:1/1;background:linear-gradient(150deg,var(--forest) 0%,var(--forest-deep) 100%);display:grid;place-items:center;position:relative;overflow:hidden}
+.ab .ph img{width:100%;height:100%;object-fit:cover;object-position:50% 38%}
+.ab .ph .ini{font:800 2.4rem/1 var(--f-display);color:var(--lime)}
+.ab .ph .hint{position:absolute;bottom:8px;left:8px;right:8px;font:500 .62rem/1.3 var(--f-mono);color:#cfe8d6;text-align:center}
+.ab .bd{padding:12px 14px 14px;display:grid;gap:4px}
+.ab .nm{font:700 .98rem/1.2 var(--f-display)}
+.ab .hd{font:500 .74rem/1 var(--f-mono);color:var(--muted)}
+.ab .sg{justify-self:start;margin-top:4px}
+.score-tbl td:first-child{font-weight:600}
+
+/* mockups */
+.mtabs{display:flex;flex-wrap:wrap;gap:6px}
+.mtabs button{font:600 .86rem/1 var(--f-body);padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.mtabs button[aria-selected="true"]{background:var(--forest-deep);color:var(--lime);border-color:var(--forest-deep)}
+.frame{border-radius:20px;overflow:hidden;border:1px solid var(--line);background:var(--surface);box-shadow:0 24px 50px -28px rgba(5,59,34,.45)}
+.chrome{display:flex;align-items:center;gap:7px;padding:10px 14px;background:var(--surface-2);border-bottom:1px solid var(--line)}
+.chrome i{width:10px;height:10px;border-radius:50%;background:var(--line)}
+.chrome .url{margin-left:10px;font:400 .76rem/1 var(--f-mono);color:var(--muted);background:var(--surface);border:1px solid var(--line);padding:6px 10px;border-radius:7px;flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.app{display:grid;grid-template-columns:210px 1fr;min-height:600px}
+.side{background:var(--forest-deep);padding:18px 12px;display:grid;gap:4px;align-content:start}
+.side .wordmark{padding:4px 10px 16px}
+.side button{all:unset;cursor:pointer;display:flex;align-items:center;gap:9px;font-size:.86rem;padding:9px 12px;border-radius:10px;color:#bcd9c5}
+.side button::before{content:"";width:7px;height:7px;border-radius:50%;background:#3d6b50}
+.side button:hover{color:#fff}
+.side button[aria-current="true"]{background:var(--lime);color:var(--on-lime);font-weight:600}
+.side button[aria-current="true"]::before{background:var(--on-lime)}
+.side button:focus-visible{outline:2px solid var(--lime)}
+.side .foot{margin-top:18px;padding:12px;font-size:.72rem;color:#8fb59c;border-top:1px solid rgba(255,255,255,.1)}
+.main{padding:22px 24px;display:grid;gap:16px;align-content:start;min-width:0}
+.mh{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+.mh h3{font-size:1.3rem}
+.example{font:600 .66rem/1 var(--f-mono);color:var(--human);background:var(--human-soft);padding:5px 8px;border-radius:6px}
+.filters{display:flex;flex-wrap:wrap;gap:8px}
+.sel{font-size:.8rem;border:1px solid var(--line);border-radius:999px;padding:6px 12px;background:var(--surface)}
+.sel b{font-weight:600}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.kpi{border-radius:16px;padding:14px 16px;display:grid;gap:2px;background:var(--surface-2)}
+.kpi:first-child{background:var(--forest-deep);color:var(--forest-ink)}
+.kpi:first-child .l{color:#a9cdb5}
+.kpi .v{font:700 1.7rem/1.1 var(--f-display);font-variant-numeric:tabular-nums}
+.kpi:first-child .v{color:var(--lime)}
+.kpi .l{font-size:.76rem;color:var(--muted)}
+.panel{border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;gap:12px;min-width:0}
+.panel h4{font-size:.92rem}
+.two{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:14px}
+.bars{display:grid;gap:8px}
+.brow{display:grid;grid-template-columns:150px 1fr 46px;gap:10px;align-items:center;font-size:.8rem}
+.track{height:12px;background:var(--surface-2);border-radius:6px;position:relative;overflow:hidden}
+.fill{position:absolute;inset:0 auto 0 0;border-radius:6px;background:var(--forest)}
+.fill.l{background:var(--lime)}
+.fill.w{background:var(--human)}
+.fill.d{background:var(--data)}
+.track .one{position:absolute;top:0;bottom:0;width:2px;background:var(--ink);opacity:.5}
+.posts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.post{border:1px solid var(--line);border-radius:12px;overflow:hidden;display:grid;font-size:.76rem;cursor:default}
+.post .th{aspect-ratio:4/5;display:flex;flex-direction:column;justify-content:space-between;padding:10px;color:#fff}
+.post .th b{font:700 .92rem/1.15 var(--f-display)}
+.post .th .fm{font:600 .62rem/1 var(--f-mono);background:rgba(0,0,0,.35);padding:4px 6px;border-radius:5px;align-self:flex-start}
+.post .mt{padding:8px 9px;display:grid;gap:3px}
+.post .mt div{display:flex;justify-content:space-between;gap:6px}
+.post.sel{outline:3px solid var(--lime);outline-offset:-3px}
+.json{font:400 .72rem/1.5 var(--f-mono);background:var(--surface-2);border-radius:10px;padding:10px 12px;overflow-x:auto;white-space:pre;margin:0}
+.slider{display:grid;grid-template-columns:110px 1fr 30px;gap:8px;align-items:center;font-size:.8rem}
+.slider input{width:100%;accent-color:var(--forest)}
+.cand{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:12px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.cand .av{width:44px;height:44px;border-radius:50%;background:var(--forest-deep);color:var(--lime);display:grid;place-items:center;font:800 .9rem/1 var(--f-display);overflow:hidden}
+.cand .av img{width:100%;height:100%;object-fit:cover;object-position:50% 30%}
+.cand .nm{font-weight:600;font-size:.88rem}
+.cand .sc{font:800 1.4rem/1 var(--f-display);font-variant-numeric:tabular-nums;color:var(--forest)}
+.mini{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:6px}
+.mini div{height:6px;border-radius:3px;background:var(--surface-2);position:relative;overflow:hidden}
+.mini div i{position:absolute;inset:0 auto 0 0;background:var(--forest)}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.btn{font:600 .82rem/1 var(--f-body);padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn.pri{background:var(--lime);border-color:var(--lime);color:var(--on-lime)}
+.btn.no{color:var(--bad);border-color:var(--bad)}
+.review{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+.check{display:grid;gap:7px;font-size:.82rem}
+.check div{display:flex;gap:8px;align-items:flex-start}
+.check .ok::before{content:"✓";color:var(--forest);font-weight:700}
+.check .wa::before{content:"!";color:var(--human);font-weight:700;width:10px;text-align:center}
+.mail{background:var(--surface);border-radius:20px;padding:16px;display:grid;gap:10px;font-size:.8rem;border:1px solid var(--line)}
+.mail .hdr{background:var(--lime);color:var(--on-lime);border-radius:12px;padding:12px;display:grid;gap:4px}
+.mail .hdr b{font:800 1.02rem/1.15 var(--f-display)}
+.mail ol{margin:0;padding-left:18px;display:grid;gap:3px}
+.mail .cta{background:var(--forest-deep);color:var(--lime);text-align:center;border-radius:999px;padding:10px;font-weight:700}
+.chat{display:grid;gap:10px;font-size:.86rem}
+.msg{border-radius:16px;padding:10px 14px;max-width:85%;min-width:0}
+.msg.u{background:var(--forest-deep);color:var(--forest-ink);justify-self:end}
+.msg.a{border:1px solid var(--line)}
+.tc{font:400 .74rem/1.5 var(--f-mono);background:var(--ai-soft);border:1px solid var(--ai);border-radius:10px;padding:8px 10px;overflow-x:auto}
+
+/* timeline */
+.days{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.day{border-radius:18px;padding:18px;background:rgba(255,255,255,.05);border:1px solid rgba(180,245,15,.25);display:grid;gap:8px;align-content:start}
+.day .d{font:700 .8rem/1 var(--f-mono);color:var(--lime)}
+.day ul{margin:0;padding-left:18px;font-size:.88rem;display:grid;gap:4px;color:#cfe8d6}
+.risks{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.risk{border-radius:14px;padding:14px 16px;background:rgba(255,255,255,.05);display:grid;gap:4px}
+.risk b{color:var(--lime);font-family:var(--f-display);font-size:.95rem}
+.risk p{font-size:.86rem;color:#b9d8c3}
+footer{padding:28px max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px));font-size:.82rem;color:var(--muted);text-align:center}
+
+/* sitemap + app enxuto */
+.sitemap{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.sm-col{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px 18px;display:grid;gap:12px;align-content:start;min-width:0}
+.sm-h{display:flex;gap:12px;align-items:center}
+.sm-h b{display:block;font:700 1.1rem/1.2 var(--f-display)}
+.sm-h span:not(.sm-n){font-size:.84rem;color:var(--muted)}
+.sm-n{width:34px;height:34px;border-radius:50%;background:var(--forest-deep);color:var(--lime);display:grid;place-items:center;font:700 .9rem/1 var(--f-mono);flex:0 0 auto}
+.sm-col ul{margin:0;padding:0;list-style:none;display:grid;gap:8px;font-size:.86rem}
+.sm-col li{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.sm-col li i{font-style:normal;color:var(--muted);font-size:.8rem}
+.sm-t{font:600 .64rem/1 var(--f-mono);text-transform:uppercase;letter-spacing:.06em;padding:4px 6px;border-radius:5px;background:var(--surface-2);color:var(--muted)}
+.sm-t.sub{background:var(--data-soft);color:var(--data)}
+.sm-t.go{background:var(--lime);color:var(--on-lime)}
+.tasks{margin:0;padding-left:20px;display:grid;gap:10px;font-size:.9rem}
+ul.tasks{list-style:none;padding-left:0}
+.tasks li{display:grid;gap:2px}
+.tasks span{color:var(--muted);font-size:.84rem}
+
+.ui{position:relative;min-height:640px;display:flex;flex-direction:column;background:var(--bg)}
+.ui-top{display:flex;align-items:center;gap:18px;padding:12px 18px;background:var(--forest-deep);flex-wrap:wrap}
+.ui-nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.ui-nav button{all:unset;cursor:pointer;color:#bcd9c5;font-weight:600;font-size:.92rem;padding:8px 14px;border-radius:999px;display:inline-flex;gap:7px;align-items:center;white-space:nowrap}
+.ui-nav button:hover{color:#fff}
+.ui-nav button[aria-current="page"]{background:var(--lime);color:var(--on-lime)}
+.ui-nav button:focus-visible,.crumb button:focus-visible,.modal-x:focus-visible,.linkbtn:focus-visible{outline:2px solid var(--lime);outline-offset:2px}
+.badge-n{background:var(--bad);color:#fff;font:700 .64rem/1 var(--f-mono);padding:3px 6px;border-radius:999px}
+.ui-top .spacer{flex:1}
+.seg-pick{font-size:.78rem;color:#bcd9c5;display:flex;gap:8px;align-items:center}
+.seg-pick select{font:inherit;font-size:.84rem;border:1px solid rgba(180,245,15,.45);border-radius:999px;padding:6px 12px;background:var(--forest-deep);color:var(--lime)}
+.crumb{padding:14px 22px 0;font-size:.84rem;color:var(--muted);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.crumb button{all:unset;cursor:pointer;color:var(--forest);font-weight:600}
+.ui-body{padding:20px 22px 26px;display:grid;gap:18px;align-content:start;min-width:0;flex:1}
+.linkbtn{all:unset;cursor:pointer;color:var(--forest);font-weight:600;font-size:.86rem}
+.linkbtn:hover{text-decoration:underline}
+
+.ask{background:var(--forest-deep);color:var(--forest-ink);border-radius:20px;padding:22px;display:grid;gap:12px}
+.ask h3{font-size:1.45rem;color:#fff}
+.ask .row{display:flex;gap:10px;flex-wrap:wrap}
+.ask input{font:inherit;font-size:1rem;flex:1;min-width:200px;border:0;border-radius:999px;padding:13px 18px;background:#fff;color:#0c2a1b}
+.ask .btn.pri{font-size:.95rem;padding:13px 20px}
+.ask .note{font-size:.84rem;color:#a9cdb5}
+.ask .ctx{color:#a9cdb5}
+.ctx{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.82rem}
+.ctx .chip{background:var(--lime);color:var(--on-lime);font-size:.8rem;font-weight:600;padding:6px 10px;border-radius:999px;display:inline-flex;gap:8px;align-items:center}
+.ctx .chip button{all:unset;cursor:pointer;font-weight:700}
+.gen{display:grid;gap:6px;font-size:.88rem}
+.gen div{display:flex;gap:8px;align-items:center;color:#a9cdb5}
+.gen div.done{color:var(--lime)}
+.gen div.done::before{content:"✓"}
+.gen div:not(.done)::before{content:"…"}
+.find-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.finds{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.find{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;gap:8px;align-content:start}
+.find .ico{font:700 .7rem/1 var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--forest)}
+.find b{font:700 1.05rem/1.25 var(--f-display)}
+.find p{font-size:.88rem;color:var(--muted)}
+.find .act{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:4px}
+.find.avoid{background:var(--human-soft);border-color:transparent}
+.find.avoid .ico{color:var(--human)}
+.find.tool .ico{color:var(--ai)}
+.btn.sm{padding:8px 12px;font-size:.8rem}
+
+.list{display:grid;gap:8px}
+.prow{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:14px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:10px 14px;background:var(--surface)}
+.prow:hover,.prow:focus-visible{border-color:var(--forest)}
+.prow .tn{width:56px;aspect-ratio:4/5;border-radius:8px;display:grid;place-items:center;font:800 .62rem/1.1 var(--f-display);text-align:center;padding:4px}
+.prow b{font:700 .95rem/1.3 var(--f-display);display:block}
+.prow .fm{font:500 .72rem/1 var(--f-mono);color:var(--muted)}
+.why{background:var(--surface-2);border-radius:14px;padding:14px 16px;display:grid;gap:8px;font-size:.9rem}
+.why ul{margin:0;padding-left:18px;display:grid;gap:4px}
+details.more{border-top:1px solid var(--line);padding-top:10px}
+details.more summary{cursor:pointer;font-weight:600;font-size:.86rem;color:var(--forest)}
+details.more[open] summary{margin-bottom:10px}
+
+.cgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.ccard{all:unset;box-sizing:border-box;cursor:pointer;background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:grid}
+.ccard:hover,.ccard:focus-visible{border-color:var(--forest)}
+.ccard .ph{aspect-ratio:16/10;background:linear-gradient(150deg,var(--forest),var(--forest-deep));display:grid;place-items:center;overflow:hidden}
+.ccard .ph img{width:100%;height:100%;object-fit:cover;object-position:50% 30%}
+.ccard .ph span{font:800 2rem/1 var(--f-display);color:var(--lime)}
+.ccard .bd{padding:12px 14px 14px;display:grid;gap:5px}
+.ccard .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ccard .nm{font:700 .98rem/1.2 var(--f-display)}
+.ccard .sc{font:800 1.3rem/1 var(--f-display);color:var(--forest)}
+.ccard p{font-size:.82rem;color:var(--muted)}
+.profile-h{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.profile-h .av{width:72px;height:72px;border-radius:50%;background:var(--forest-deep);color:var(--lime);display:grid;place-items:center;font:800 1.2rem/1 var(--f-display);overflow:hidden;flex:0 0 auto}
+.profile-h .av img{width:100%;height:100%;object-fit:cover;object-position:50% 30%}
+.profile-h .big{font:800 2.2rem/1 var(--f-display);color:var(--forest);margin-left:auto}
+.profile-h .big small{font:500 .8rem/1 var(--f-body);color:var(--muted)}
+
+.mini-posts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.mini-posts button{all:unset;box-sizing:border-box;cursor:pointer;border-radius:10px;overflow:hidden;border:1px solid var(--line);display:grid}
+.mini-posts button:focus-visible{outline:3px solid var(--lime)}
+.mini-posts .th{aspect-ratio:4/5;padding:8px;color:#fff;display:flex;flex-direction:column;justify-content:space-between}
+.mini-posts .th b{font:700 .78rem/1.15 var(--f-display)}
+.mini-posts .th span{font:600 .58rem/1 var(--f-mono);background:rgba(0,0,0,.35);padding:3px 5px;border-radius:4px;align-self:flex-start}
+.mini-posts .mt{padding:6px 8px;font-size:.7rem;color:var(--muted)}
+.dl{display:grid;grid-template-columns:120px 1fr;gap:6px 12px;font-size:.86rem;margin:0}
+.dl dt{font:500 .72rem/1.6 var(--f-mono);color:var(--muted)}
+.dl dd{margin:0}
+.modal-layer{position:absolute;inset:0;background:rgba(3,26,14,.6);display:grid;place-items:center;padding:20px;z-index:5}
+.modal{background:var(--surface);color:var(--ink);border-radius:18px;max-width:540px;width:100%;max-height:100%;overflow:auto;padding:18px 20px 20px;display:grid;gap:12px;box-shadow:0 30px 60px -20px rgba(0,0,0,.5)}
+.modal:focus{outline:none}
+.modal-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.modal-h h4{font-size:1.1rem}
+.modal-x{all:unset;cursor:pointer;font-size:1.3rem;line-height:1;padding:2px 8px;border-radius:8px;color:var(--muted)}
+.modal .back{all:unset;cursor:pointer;color:var(--forest);font-weight:600;font-size:.86rem}
+.modal textarea,.modal select{font:inherit;font-size:.88rem;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--surface);color:var(--ink);width:100%}
+.modal label{display:grid;gap:5px;font-size:.84rem;color:var(--muted)}
+.toast{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);background:var(--forest-deep);color:var(--lime);padding:10px 16px;border-radius:999px;font-size:.86rem;z-index:6;box-shadow:0 10px 24px -10px rgba(0,0,0,.5);white-space:nowrap;max-width:calc(100% - 32px);overflow:hidden;text-overflow:ellipsis}
+@media (max-width:1000px){.sitemap{grid-template-columns:1fr}.cgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.finds,.cgrid{grid-template-columns:1fr}.mini-posts{grid-template-columns:repeat(2,minmax(0,1fr))}.dl{grid-template-columns:1fr}.ui-body{padding:16px 14px}.prow{grid-template-columns:44px minmax(0,1fr)}.prow .pill{grid-column:2}}
+.agenda{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:14px;align-items:start}
+.cal-wrap{overflow-x:auto;min-width:0}
+.cal{min-width:720px;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.cal .dh{font:600 .68rem/1 var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:4px 6px}
+.day{min-height:122px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:7px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.day.weak{background:transparent;border-style:dashed}
+.day.today{box-shadow:0 0 0 2px var(--lime)}
+.day .num{font:700 .82rem/1 var(--f-display);display:flex;justify-content:space-between;align-items:center;gap:4px}
+.day .num small{font:600 .58rem/1 var(--f-mono);color:var(--forest)}
+.day .dt{font:600 .6rem/1.25 var(--f-mono);background:var(--human-soft);color:var(--human);padding:3px 5px;border-radius:5px}
+.day .empty{font-size:.66rem;color:var(--muted);margin-top:auto}
+.it{all:unset;box-sizing:border-box;cursor:pointer;border-radius:9px;padding:6px 7px;font-size:.72rem;line-height:1.25;display:grid;gap:3px;min-width:0}
+.it.sug{border:1.5px dashed var(--forest);background:var(--surface)}
+.it.pc{background:var(--forest-deep);color:var(--forest-ink)}
+.it.pc .meta{color:#a9cdb5}
+.it:hover,.it:focus-visible{box-shadow:0 0 0 2px var(--lime)}
+.it b{font-weight:700;font-size:.74rem}
+.it .meta{font:500 .6rem/1.25 var(--f-mono);color:var(--muted)}
+.side-box{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:grid;gap:8px;font-size:.82rem}
+.side-box h4{font-size:.88rem}
+.side-box ul{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.side-box li{display:flex;justify-content:space-between;gap:8px}
+.side-box li span:last-child{font-family:var(--f-mono);font-size:.74rem;color:var(--muted);white-space:nowrap}
+.lg{display:flex;gap:8px;align-items:center;font-size:.76rem;color:var(--muted)}
+.lg i{width:18px;height:12px;border-radius:4px;display:inline-block}
+.toggle{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--surface)}
+.toggle button{all:unset;cursor:pointer;padding:6px 12px;border-radius:999px;font-size:.8rem;font-weight:600;color:var(--muted)}
+.toggle button[aria-pressed="true"]{background:var(--forest-deep);color:var(--lime)}
+.toggle button:focus-visible{outline:2px solid var(--lime)}
+.cost{font-size:.78rem;color:var(--muted);display:flex;gap:6px;align-items:center}
+@media (max-width:1000px){.agenda{grid-template-columns:1fr}}
+.sugbar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;background:var(--surface);border:1.5px dashed var(--forest);border-radius:16px;padding:14px 16px}
+.sugbar > div{display:grid;gap:2px}
+.cgrid.five{grid-template-columns:repeat(5,minmax(0,1fr))}
+.cgrid.five .ccard .ph{aspect-ratio:16/9}
+.sugl{display:grid;gap:8px}
+.modal .sugrow{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer}
+.sugrow input{margin-top:3px;accent-color:var(--forest)}
+.sugrow > span{display:grid;gap:2px}
+.comp{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.comp input{font:inherit;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--surface);color:var(--ink);width:100%}
+.macros{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.84rem}
+.modal .macros label{display:flex;gap:6px;align-items:center;color:var(--ink)}
+.macros input{accent-color:var(--forest)}
+@media (max-width:1000px){.cgrid.five{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.cgrid.five{grid-template-columns:1fr}.comp{grid-template-columns:1fr}}
+@media (max-width:1000px){
+  .hero .wrap{grid-template-columns:1fr}
+  .steps5{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .reuse-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .amb{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .cre-row{grid-template-columns:1fr}
+  .learn{grid-template-columns:1fr}
+  .app{grid-template-columns:1fr}
+  .side{grid-auto-flow:column;grid-auto-columns:max-content;overflow-x:auto}
+  .side .wordmark,.side .foot{display:none}
+  .two,.review{grid-template-columns:1fr}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .posts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .days{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:560px){
+  .band{padding-block:52px}
+  .steps5,.reuse-grid,.days{grid-template-columns:1fr}
+  .amb{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .gal{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .collage{grid-template-columns:repeat(3,1fr);gap:6px}
+  .brow{grid-template-columns:100px 1fr 40px}
+  .main{padding:16px 14px}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<nav class="topnav" aria-label="Seções">
+  <div class="in">
+    <span class="wordmark">impulso<br>stone<small>BoaPauta</small></span>
+    <a href="#passos">Como funciona</a>
+    <a href="#aprendizados">Aprendizados</a>
+    <a href="#arquitetura">Arquitetura</a>
+    <a href="#suno">Base do Case Suno</a>
+    <a href="#agente">Agente</a>
+    <a href="#criativos">Criativos</a>
+    <a href="#embaixadores">Embaixadores</a>
+    <a href="#telas">Telas</a>
+    <a href="#prazo">Prazo</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="band dark hero">
+  <div class="wrap">
+    <div style="display:grid;gap:18px">
+      <span class="kicker">Stone × Inteli Academy · arquitetura</span>
+      <h1>O que engaja o empreendedor vira <span class="hl">criativo</span> da Stone</h1>
+      <p class="lead">Um sistema que coleta posts públicos do nicho MPE, descobre o que faz um conteúdo engajar e gera criativos para o Impulso Stone, sempre apontando os posts reais que inspiraram cada ideia.</p>
+      <div class="hero-meta">
+        <span class="chip-d">Entrega <b>25/11</b></span>
+        <span class="chip-d">Coleta <b>Graph API oficial</b></span>
+        <span class="chip-d">Janela <b>90 dias</b></span>
+        <span class="chip-d">Base de código <b>Case Suno</b></span>
+      </div>
+    </div>
+    <div style="display:grid;gap:22px">
+      <div class="collage">
+        <figure><img src="img/historico/criativo_11.jpg" alt="Post Empreendedor, comenta com uma foto do seu trabalho"><figcaption>CTR 8,82%</figcaption></figure>
+        <figure><img src="img/historico/criativo_15.jpg" alt="Criativo Oficinas com Chef Ruth"><figcaption>CTR 3,59%</figcaption></figure>
+        <figure><img src="img/historico/criativo_13.jpg" alt="Post 5 ideias para vender mais na Festa Junina"><figcaption>CTR 8,43%</figcaption></figure>
+        <figure><img src="img/historico/criativo_06.jpg" alt="Anúncio Seu negócio vende mas o dinheiro nunca sobra"><figcaption>CTR 2,87%</figcaption></figure>
+        <figure><img src="img/historico/criativo_10.jpg" alt="Story com depoimento de empreendedora"><figcaption>CTR 3,04%</figcaption></figure>
+        <figure><img src="img/historico/criativo_14.jpg" alt="Post Como fazer um pós-venda que fideliza"><figcaption>CTR 6,03%</figcaption></figure>
+      </div>
+      <p class="src">Criativos reais do Impulso Stone no Meta Ads, fevereiro a outubro de 2026. Fonte: histórico de campanhas entregue pela Stone.</p>
+    </div>
+  </div>
+</header>
+
+<!-- PASSOS -->
+<section class="band" id="passos">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">Como funciona</span>
+      <h2>Cinco passos, do post público ao criativo aprovado</h2>
+      <p class="lead">Cada passo entrega algo concreto para o seguinte. O detalhe técnico de cada um está na arquitetura, mais abaixo.</p>
+    </div>
+    <div class="steps5">
+      <article class="step5">
+        <span class="num">01</span>
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></div>
+        <h3>Coletar</h3>
+        <p>Posts de 40 a 50 perfis do nicho MPE pelo Instagram e pelo YouTube, só por rotas oficiais.</p>
+        <div class="tags"><span class="tg">Graph API</span><span class="tg">YouTube API</span></div>
+        <p class="out"><b>Entrega:</b> 2 a 5 mil posts com métricas e data</p>
+      </article>
+      <article class="step5">
+        <span class="num">02</span>
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg></div>
+        <h3>Ranquear</h3>
+        <p>Engajamento dividido pelos seguidores, top 10% em cada faixa de tamanho e um grupo controle para comparar.</p>
+        <div class="tags"><span class="tg">pandas</span><span class="tg">SQL</span></div>
+        <p class="out"><b>Entrega:</b> top posts e grupo controle</p>
+      </article>
+      <article class="step5">
+        <span class="num">03</span>
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></div>
+        <h3>Entender</h3>
+        <p>A IA assiste aos vídeos e preenche a rubrica: gancho, formato, tema, tom, CTA. Uma pessoa valida 50 posts.</p>
+        <div class="tags"><span class="tg">Gemini</span><span class="tg">Groq</span><span class="tg">kappa</span></div>
+        <p class="out"><b>Entrega:</b> cada post descrito em JSON</p>
+      </article>
+      <article class="step5">
+        <span class="num">04</span>
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z"/></svg></div>
+        <h3>Descobrir</h3>
+        <p>O que aparece mais no top do que no controle, os formatos em alta, as ferramentas do momento e os criadores com perfil de embaixador.</p>
+        <div class="tags"><span class="tg">lift</span><span class="tg">radar</span><span class="tg">scorecard</span></div>
+        <p class="out"><b>Entrega:</b> padrões com prova</p>
+      </article>
+      <article class="step5">
+        <span class="num">05</span>
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z"/><path d="M19 17l.8 2.2L22 20l-2.2.8L19 23l-.8-2.2L16 20l2.2-.8L19 17Z"/></svg></div>
+        <h3>Criar</h3>
+        <p>O agente gera Reels, carrossel, Stories e estático no tom do Impulso. Tudo passa por verificação e aprovação humana.</p>
+        <div class="tags"><span class="tg">LangGraph</span><span class="tg">MCP</span><span class="tg">Playwright</span></div>
+        <p class="out"><b>Entrega:</b> pacote de criativos, Playbook da Stone e guia detalhado</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- APRENDIZADOS -->
+<section class="band alt" id="aprendizados">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">O ponto de partida</span>
+      <h2>O que a Stone já aprendeu: reagir não é clicar</h2>
+      <p class="lead">Os criativos do próprio Impulso mostram por que o sistema mede engajamento <b>e</b> sinal de lead. Os posts de baixo tiveram reação, mas quase ninguém clicou. Esses aprendizados entram no contexto do agente.</p>
+    </div>
+    <div class="learn">
+      <div class="learn-col">
+        <div class="learn-h"><span class="dot" style="background:var(--forest)"></span><h3>Melhor CTR</h3></div>
+        <div class="gal">
+          <figure class="cr good"><div class="img"><img src="img/historico/criativo_11.jpg" alt="Empreendedor, comenta com uma foto do seu trabalho" loading="lazy"></div><figcaption><span class="ctr">8,82%<small>CTR</small></span><span class="t">"Empreendedor(a), queremos..." · convite à participação</span></figcaption></figure>
+          <figure class="cr good"><div class="img"><img src="img/historico/criativo_12.jpg" alt="3 custos que uma profissional da beleza não pode esquecer" loading="lazy"></div><figcaption><span class="ctr">8,62%<small>CTR</small></span><span class="t">Segmentação beleza · nicho específico</span></figcaption></figure>
+          <figure class="cr good"><div class="img"><img src="img/historico/criativo_13.jpg" alt="5 ideias para vender mais na Festa Junina" loading="lazy"></div><figcaption><span class="ctr">8,43%<small>CTR</small></span><span class="t">Festa Junina · data do calendário</span></figcaption></figure>
+          <figure class="cr good"><div class="img"><img src="img/historico/criativo_14.jpg" alt="Como fazer um pós-venda que fideliza o cliente" loading="lazy"></div><figcaption><span class="ctr">6,03%<small>CTR</small></span><span class="t">"Vendeu? E agora?" · dor real</span></figcaption></figure>
+          <figure class="cr good"><div class="img"><img src="img/historico/criativo_15.jpg" alt="Oficinas com Chef Ruth" loading="lazy"></div><figcaption><span class="ctr">3,59%<small>CTR</small></span><span class="t">Chef Ruth · pessoa real</span></figcaption></figure>
+          <figure class="cr good"><div class="img"><img src="img/historico/criativo_06.jpg" alt="Seu negócio vende, mas o dinheiro nunca sobra" loading="lazy"></div><figcaption><span class="ctr">2,87%<small>CTR</small></span><span class="t">Estático · 557 mil impressões em escala</span></figcaption></figure>
+        </div>
+        <div class="lesson"><b>Em comum</b><span class="muted">Convidam a participar, falam com um nicho ou uma data, tocam numa dor concreta ou mostram uma pessoa real.</span></div>
+      </div>
+      <div class="learn-col">
+        <div class="learn-h"><span class="dot" style="background:var(--bad)"></span><h3>Pior CTR</h3></div>
+        <div class="gal">
+          <figure class="cr bad"><div class="img"><img src="img/historico/criativo_18.jpg" alt="Criativo Vender mais não é sorte" loading="lazy"></div><figcaption><span class="ctr">0,77%<small>CTR</small></span><span class="t">"Vender mais não é sorte" · frase genérica</span></figcaption></figure>
+          <figure class="cr bad"><div class="img"><img src="img/historico/criativo_19.jpg" alt="Trabalhar mais não vai fazer seu negócio crescer" loading="lazy"></div><figcaption><span class="ctr">0,82%<small>CTR</small></span><span class="t">Estático de setembro · 20 mil impressões, 159 engajamentos</span></figcaption></figure>
+          <figure class="cr bad"><div class="img"><img src="img/historico/criativo_20.jpg" alt="Depoimento da empreendedora Cristina" loading="lazy"></div><figcaption><span class="ctr">0,82%<small>CTR</small></span><span class="t">Depoimento Cristina · muita reação, pouco clique*</span></figcaption></figure>
+          <figure class="cr bad"><div class="img"><img src="img/historico/criativo_21.jpg" alt="POV: você decidiu empreender" loading="lazy"></div><figcaption><span class="ctr">0,97%<small>CTR</small></span><span class="t">"POV: você decidiu empreender" · sem próximo passo</span></figcaption></figure>
+          <figure class="cr bad"><div class="img"><img src="img/historico/criativo_22.jpg" alt="O dinheiro entra, mas nunca sobra" loading="lazy"></div><figcaption><span class="ctr">1,06%<small>CTR</small></span><span class="t">"Dinheiro entra, mas não sobra" · sem promessa clara</span></figcaption></figure>
+          <figure class="cr bad"><div class="img"><img src="img/historico/criativo_23.jpg" alt="Enquanto uns só assistem, outros aprendem a jogar" loading="lazy"></div><figcaption><span class="ctr">1,28%<small>CTR</small></span><span class="t">"Para muitos empreendedores..." · boa entrega, pouco clique</span></figcaption></figure>
+        </div>
+        <div class="lesson"><b>Em comum</b><span class="muted">Frase motivacional ou reflexiva, sem gancho concreto e sem um próximo passo claro. *No depoimento, cada pessoa viu o anúncio cerca de 14 vezes; a fadiga pode explicar parte do resultado.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ARQUITETURA -->
+<section class="band" id="arquitetura">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">Arquitetura</span>
+      <h2>Sete estágios, da fonte à tela</h2>
+      <p class="lead">A cor diz quem faz o trabalho. O selo <span class="reuse">♻ Suno</span> marca o que vem pronto ou quase pronto do Case Suno.</p>
+    </div>
+    <div class="legend">
+      <span><i class="sw data"></i>Fonte de dados</span>
+      <span><i class="sw code"></i>Código (regras, SQL)</span>
+      <span><i class="sw ai"></i>IA</span>
+      <span><i class="sw human"></i>Pessoa</span>
+      <span><i class="sw out"></i>Entrega</span>
+      <span><i class="sw code" style="border-style:dashed;background:transparent"></i>Opcional</span>
+    </div>
+    <div class="scroll" role="region" aria-label="Diagrama da arquitetura; role para os lados em telas pequenas" tabindex="0">
+      <div class="diag">
+        <div class="lanes">
+          <div class="lane">
+            <div class="lane-h"><i>1</i>Fontes</div>
+            <div class="nd data"><b>perfis.csv</b><span>40–50 perfis por faixa e segmento</span></div>
+            <div class="nd data"><b>Instagram Graph API</b><span>Business Discovery</span></div>
+            <div class="nd data"><b>YouTube Data API v3</b><span>playlists de uploads</span></div>
+            <div class="nd data opt"><b>Insights @impulsostone</b><span>se a Stone autorizar</span></div>
+            <div class="nd data"><b>PDFs da Stone</b><span>Ads + relatório do Instagram</span></div>
+          </div>
+          <div class="lane">
+            <div class="lane-h"><i>2</i>Coleta</div>
+            <div class="nd code"><b>Coletor IG</b><span>passada 1: todos · passada 2: mídia do top</span></div>
+            <div class="nd code"><b>Coletor YouTube</b><span>canal → uploads → vídeos</span></div>
+            <div class="nd code"><b>Agendador</b><span>semanal + botão manual</span><span class="reuse">♻ Suno · scheduler</span></div>
+            <div class="nd code"><b>Cache + backoff</b><span>retoma de onde parou</span><span class="reuse">♻ Suno · cache</span></div>
+          </div>
+          <div class="lane">
+            <div class="lane-h"><i>3</i>Base</div>
+            <div class="nd code"><b>PostgreSQL</b><span>posts, perfis, métricas, rubricas</span><span class="reuse">♻ Suno · persistence</span></div>
+            <div class="nd code"><b>Validação Pydantic</b><span>registro inválido vai para rejeitados</span></div>
+            <div class="nd code"><b>Flags</b><span>curtida oculta, collab, publi, &lt;14 dias</span></div>
+          </div>
+          <div class="lane">
+            <div class="lane-h"><i>4</i>Análise</div>
+            <div class="nd code"><b>Camada 0 · métricas</b><span>ER, lift no perfil, top por faixa, controle</span></div>
+            <div class="nd ai"><b>Camada 1 · texto</b><span>legendas em lotes de 20</span><span class="reuse">♻ Suno · llm_client</span></div>
+            <div class="nd ai"><b>Camada 2 · vídeo</b><span>Gemini assiste top + controle</span></div>
+            <div class="nd human"><b>Camada 3 · validação</b><span>50+ posts, kappa por campo</span><span class="reuse">♻ Suno · concordance</span></div>
+          </div>
+          <div class="lane">
+            <div class="lane-h"><i>5</i>Descobertas</div>
+            <div class="nd code"><b>Padrões top × controle</b><span>lift com intervalo de confiança</span></div>
+            <div class="nd code"><b>Formatos em alta</b><span>janela de 90 dias + momentum</span></div>
+            <div class="nd code"><b>Radar de ferramentas</b><span>menções e acessibilidade</span></div>
+            <div class="nd code"><b>Scorecard de criadores</b><span>busca de embaixador</span></div>
+          </div>
+          <div class="lane">
+            <div class="lane-h"><i>6</i>Agente</div>
+            <div class="nd ai"><b>Router + ferramentas</b><span>escolhe o fluxo pelo modo</span></div>
+            <div class="nd ai"><b>Gerador</b><span>redige com base nas ferramentas</span></div>
+            <div class="nd code"><b>Verificador + juiz</b><span>refs, números, tom, até 2 reescritas</span><span class="reuse">♻ Suno · evaluation</span></div>
+            <div class="nd human"><b>Revisão humana</b><span>aprovar, editar, rejeitar</span><span class="reuse">♻ Suno · validation</span></div>
+          </div>
+          <div class="lane">
+            <div class="lane-h"><i>7</i>Entregas</div>
+            <div class="nd out"><b>App Streamlit</b><span>3 páginas: Início, Agenda, Criadores</span><span class="reuse">♻ Suno · app</span></div>
+            <div class="nd out"><b>Slides em PNG</b><span>carrossel no visual Impulso</span><span class="reuse">♻ Suno · rendering</span></div>
+            <div class="nd out"><b>Servidor MCP</b><span>+ função run_agent()</span></div>
+            <div class="nd out"><b>Playbook da Stone</b><span>gerado a partir da base</span></div>
+            <div class="nd out opt"><b>Guia detalhado da semana</b><span>e-mail ao empreendedor · sexta</span></div>
+          </div>
+        </div>
+        <div class="rail">
+          <div class="ctx"><b>stone_context.yaml</b> tom acolhedor · 5 pilares editoriais · persona (70,5% mulheres, 47,5% entre 35 e 54 anos) · aprendizados do Ads → alimenta o agente, sempre marcado como fonte interna</div>
+        </div>
+        <div class="rail">
+          <div class="obs"><b>Registro de cada execução</b> entrada, ferramentas chamadas, posts usados, modelo, versão da rubrica, tokens, latência <span class="reuse">♻ Suno · execucoes / tentativas</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>Dados usados e por quê</h3>
+        <div class="tbl"><table>
+          <thead><tr><th>Dado</th><th>Para quê</th></tr></thead>
+          <tbody>
+            <tr><td>Seguidores</td><td>Denominador da métrica; define a faixa do perfil</td></tr>
+            <tr><td>Curtidas e comentários</td><td>Numerador da métrica; comentários ÷ curtidas mede conversa</td></tr>
+            <tr><td>Tipo de mídia</td><td>Separa Reels, carrossel e imagem para achar os formatos em alta</td></tr>
+            <tr><td>Legenda, título</td><td>Tema, CTA, tom e ferramentas citadas</td></tr>
+            <tr><td>Data de publicação</td><td>Regra dos 14 dias e janela de 90 dias</td></tr>
+            <tr><td>Vídeo e thumbnail</td><td>Gancho dos 3 segundos, rosto, texto na tela, ritmo</td></tr>
+            <tr><td>Link do post</td><td>Referência em cada criativo e no Playbook da Stone</td></tr>
+            <tr><td>Histórico da Stone</td><td>Aprendizados no contexto e calibração com CTR real</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="card">
+        <h3>Funil: análise cara só onde importa</h3>
+        <div class="bars">
+          <div class="brow"><span>Camada 0 · todos</span><div class="track"><div class="fill" style="width:100%"></div></div><span class="num">~4 mil</span></div>
+          <div class="brow"><span>Camada 1 · 90 dias</span><div class="track"><div class="fill d" style="width:45%"></div></div><span class="num">~1,8 mil</span></div>
+          <div class="brow"><span>Camada 2 · top + controle</span><div class="track"><div class="fill l" style="width:11%"></div></div><span class="num">~400</span></div>
+          <div class="brow"><span>Camada 3 · validação</span><div class="track"><div class="fill w" style="width:2%"></div></div><span class="num">50+</span></div>
+        </div>
+        <p>Métricas custam zero. Texto vai em lotes de 20 legendas por chamada. Só cerca de 400 vídeos passam pela IA de visão. Volumes estimados.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SUNO -->
+<section class="band alt" id="suno">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">Base de código</span>
+      <h2>O Case Suno como ponto de partida</h2>
+      <p class="lead">O Perspecta já resolve metade do problema: pipeline em LangGraph, avaliação híbrida com reescrita, revisão humana, slides renderizados e um cliente de LLM com cache e controle de cota. Falta a outra metade: coletar posts e descobrir padrões.</p>
+    </div>
+    <div class="meter">
+      <div class="bar" role="img" aria-label="Proporção estimada: 45% reaproveitado, 20% adaptado, 35% novo"><i style="width:45%;background:var(--lime)"></i><i style="width:20%;background:var(--data)"></i><i style="width:35%;background:var(--ai)"></i></div>
+      <div class="legend"><span><i class="sw out"></i>Reaproveitar ~45%</span><span><i class="sw data"></i>Adaptar ~20%</span><span><i class="sw ai"></i>Construir ~35%</span><span class="small">Estimativa por componente da arquitetura, não por linha de código.</span></div>
+    </div>
+    <div class="reuse-grid">
+      <div class="rcol">
+        <div class="rh"><h3>Reaproveitar</h3><span class="badge b-keep">quase direto</span></div>
+        <ul>
+          <li><code>shared/llm_client.py</code><span>Modos live, simulated e record; limitador de tokens; espera no 429; teto de chamadas</span></li>
+          <li><code>pipeline/graph.py</code> + <code>reflection.py</code><span>Gerar → checar → julgar → reescrever, com pausa para revisão</span></li>
+          <li><code>evaluation/judge.py</code> + <code>concordance.py</code><span>Juiz com rubrica versionada; aprovação calculada pelo código</span></li>
+          <li><code>rendering/playwright_renderer.py</code><span>Slides 1080×1350 com checagem de texto que não coube e de contraste</span></li>
+          <li><code>app/validation_screen.py</code><span>Aprovar, editar, rejeitar com motivo</span></li>
+          <li><code>persistence/</code><span>PostgreSQL: avaliado e arquivado; o app usa JSONL, CSV e SQLite</span></li>
+          <li><code>export/</code><span>Roteiro para pessoa e para IA, PNGs, ZIP</span></li>
+          <li><code>tests/fakes/llm.py</code><span>Testes sem rede</span></li>
+        </ul>
+      </div>
+      <div class="rcol">
+        <div class="rh"><h3>Adaptar</h3><span class="badge b-adapt">trocar o domínio</span></div>
+        <ul>
+          <li><code>evaluation/deterministic.py</code><span>Sai nível Flesch/densidade; entram refs existentes, CTA, tamanho por formato, termos proibidos</span></li>
+          <li><code>evaluation/flesch_ptbr.py</code><span>Vira checagem de clareza para o público de 35 a 54 anos</span></li>
+          <li><code>evaluation/format_checks.py</code><span>Carrossel e roteiro já existem; somar Stories e estático</span></li>
+          <li><code>generation/prompts/</code><span>De níveis para formatos e segmentos, com stone_context</span></li>
+          <li><code>config/*.yaml</code><span>Guia de estilo, termos proibidos e tokens visuais do Impulso</span></li>
+          <li><code>app/theme.py</code><span>Vermelho Suno → verde e limão Impulso</span></li>
+          <li><code>collection/scheduler.py</code><span>De RSS a cada 3h para coleta semanal</span></li>
+        </ul>
+      </div>
+      <div class="rcol">
+        <div class="rh"><h3>Construir</h3><span class="badge b-new">novo</span></div>
+        <ul>
+          <li><b>Coletores</b><span>Graph API (Business Discovery) e YouTube Data API</span></li>
+          <li><b>Métricas e ranking</b><span>ER, lift, top por faixa, grupo controle</span></li>
+          <li><b>Camadas 1 e 2</b><span>Rubrica em texto e em vídeo (Gemini)</span></li>
+          <li><b>Descobertas</b><span>Formatos em alta, radar, scorecard</span></li>
+          <li><b>Agente com ferramentas</b><span>O Suno é um pipeline fixo; aqui o router escolhe ferramentas por modo</span></li>
+          <li><b>Servidor MCP</b><span>FastMCP</span></li>
+          <li><b>Templates</b><span>Reels, Stories e estático no visual Impulso</span></li>
+        </ul>
+      </div>
+      <div class="rcol">
+        <div class="rh"><h3>Deixar de fora</h3><span class="badge b-drop">não se aplica</span></div>
+        <ul>
+          <li><code>admission/</code><span>Paywall e texto financeiro</span></li>
+          <li><code>extraction/</code><span>Extração ancorada de documentos</span></li>
+          <li><code>glossary/</code><span>Glossário do BCB</span></li>
+          <li><code>triangulacao/</code><span>Comparação de fontes</span></li>
+          <li><code>collection/pautas.py</code><span>Agrupamento de notícias</span></li>
+          <li><b>Marca Suno</b><span>Logo, vermelho e fontes</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="decis">
+      <div class="dcard"><b>Decisão: arquivos + SQLite, sem servidor de banco</b><p>O PostgreSQL do Suno foi avaliado e arquivado: a análise lê JSONL e CSV, e o app guarda peças, versões e decisões em SQLite. Cinco mil posts cabem em arquivos, e não há servidor de banco para manter.</p></div>
+      <div class="dcard"><b>Proposta: Groq para texto, Gemini só para vídeo</b><p>O cliente Groq do Suno já controla cota e cache. O Gemini entra apenas na camada 2, onde é preciso assistir ao vídeo.</p></div>
+      <div class="dcard"><b>Proposta: repositório novo, não cópia inteira</b><p>Trazer só os módulos da lista, com os testes deles. Carregar as partes de notícias atrasaria e confundiria a banca.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- AGENTE -->
+<section class="band" id="agente">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">Agente</span>
+      <h2>Um router que escolhe as ferramentas, e o laço de qualidade do Suno no fim</h2>
+      <p class="lead">Ferramentas em cinza devolvem dados da base. Ferramentas em violeta usam o LLM. O modelo nunca inventa um número: ele só redige com o que as ferramentas trouxeram.</p>
+    </div>
+    <div class="scroll" role="region" aria-label="Grafo do agente" tabindex="0">
+      <div class="agent">
+        <div class="stack">
+          <div class="nd code"><b>Pedido</b><span>modo, pergunta, segmento, filtros</span></div>
+          <div class="nd code"><b>Contexto da Stone</b><span>tom, persona, pilares</span></div>
+        </div>
+        <div class="stack"><div class="nd ai"><b>Router</b><span>lê o modo</span></div></div>
+        <div class="modes">
+          <div class="mode"><b>analisar</b><div class="seq"><span class="tl c">query_stats</span><i>→</i><span class="tl c">search_posts</span><i>→</i><span class="tl a">explicar</span></div></div>
+          <div class="mode"><b>recomendar</b><div class="seq"><span class="tl c">query_stats</span><i>→</i><span class="tl c">format_trends</span><i>→</i><span class="tl a">recomendar</span></div></div>
+          <div class="mode"><b>gerar_criativo</b><div class="seq"><span class="tl c">query_stats</span><i>→</i><span class="tl c">search_posts</span><i>→</i><span class="tl a">gerar</span></div></div>
+          <div class="mode"><b>gerar_pacote</b><div class="seq"><span class="tl c">format_trends</span><i>→</i><span class="tl c">tool_radar</span><i>→</i><span class="tl c">search_posts</span><i>→</i><span class="tl a">gerar ×N</span></div></div>
+          <div class="mode"><b>buscar_embaixador</b><div class="seq"><span class="tl c">creator_scorecard</span><i>→</i><span class="tl a">justificar</span></div></div>
+          <div class="mode opt"><b>avaliar_criativo</b><div class="seq"><span class="tl a">classificar rascunho</span><i>→</i><span class="tl c">comparar</span><i>→</i><span class="tl a">sugerir</span></div></div>
+          <div class="mode opt"><b>aprofundar_conteudo</b><div class="seq"><span class="tl c">posts da semana</span><i>→</i><span class="tl a">guia detalhado</span></div></div>
+        </div>
+        <div class="loop">
+          <div class="nd code"><b>Checagens</b><span>refs existem · números = ferramentas · CTA · tamanho · termos proibidos · clareza</span></div>
+          <div class="nd ai"><b>Juiz</b><span>outro modelo, rubrica do criativo</span></div>
+        </div>
+        <div class="stack">
+          <div class="nd human"><b>Revisão</b><span>aprovar / editar / rejeitar</span></div>
+          <div class="nd out"><b>Saída</b><span>JSON + PNGs + log</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h3>Rubrica do juiz para criativos</h3>
+        <p>Mesmo mecanismo do Suno: o juiz dá nota com justificativa por critério, e o código decide a aprovação (média ponderada ≥ 7 e nenhum critério abaixo de 5).</p>
+        <div class="tbl"><table>
+          <thead><tr><th>Critério</th><th class="num">Peso</th></tr></thead>
+          <tbody>
+            <tr><td>Aderência aos padrões do top (gancho, formato, duração)</td><td class="num">1,5</td></tr>
+            <tr><td>Próximo passo claro (CTA)</td><td class="num">1,3</td></tr>
+            <tr><td>Tom do Impulso: acolhedor, simples, sem promessa exagerada</td><td class="num">1,2</td></tr>
+            <tr><td>Clareza para quem tem de 35 a 54 anos</td><td class="num">1,0</td></tr>
+            <tr><td>Concretude: dor, número ou exemplo em vez de frase genérica</td><td class="num">1,0</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="card">
+        <h3>Contrato do agente</h3>
+<pre class="code"><span class="k">class</span> AgentInput(BaseModel):
+    mode: Literal[<span class="s">"analisar"</span>, <span class="s">"recomendar"</span>, <span class="s">"gerar_criativo"</span>,
+                  <span class="s">"gerar_pacote"</span>, <span class="s">"buscar_embaixador"</span>]
+    query: str
+    segment: str | None = None
+    filters: Filters | None = None   <span class="c"># plataforma, janela, faixa</span>
+
+<span class="k">class</span> AgentOutput(BaseModel):
+    findings: list[Finding]          <span class="c"># característica, frequência, lift, n</span>
+    reference_posts: list[RefPost]   <span class="c"># link, métrica, categorias</span>
+    creatives: list[Creative]        <span class="c"># cada um com reference_post_ids</span>
+    creators: list[CreatorScore] = []
+    confidence_flag: bool            <span class="c"># poucos posts sustentam o padrão</span>
+    explanation: str</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CRIATIVOS -->
+<section class="band alt" id="criativos">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">Criativos</span>
+      <h2>Um tema, várias peças curtas, todas com prova</h2>
+      <p class="lead">O agente escolhe os formatos que estão em alta, busca os posts de referência e escreve no tom do Impulso. O carrossel sai como imagens prontas, renderizadas pelo mesmo motor do Suno.</p>
+    </div>
+    <div class="flow9">
+      <span>Tema</span><i>→</i><span>Formatos em alta</span><i>→</i><span>Ferramenta do radar</span><i>→</i><span>Posts de referência</span><i>→</i><span>Contexto da Stone</span><i>→</i><span class="ai">Geração</span><i>→</i><span>Checagens + juiz</span><i>→</i><span class="h">Revisão</span><i>→</i><span>PNG + brief</span>
+    </div>
+    <div class="cre-row">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3>Carrossel · passo a passo</h3><span class="pill ok">41 posts sustentam</span></div>
+        <div class="carousel" tabindex="0" aria-label="Slides do carrossel de exemplo">
+          <div class="slide l"><div class="pg"><span>impulso stone</span><span>1/5</span></div><h5>Marmita: quanto cobrar sem chutar?</h5><span class="wm">arraste →</span></div>
+          <div class="slide g"><div class="pg"><span>passo 1</span><span>2/5</span></div><span class="n">01</span><h5>Some cada ingrediente</h5><p>Arroz, feijão, proteína, salada. Divida pelo número de marmitas.</p></div>
+          <div class="slide g"><div class="pg"><span>passo 2</span><span>3/5</span></div><span class="n">02</span><h5>Inclua embalagem e gás</h5><p>O custo que mais some da conta.</p></div>
+          <div class="slide k"><div class="pg"><span>passo 3</span><span>4/5</span></div><span class="n">03</span><h5>Coloque preço no seu tempo</h5><p>Seu trabalho também é custo.</p></div>
+          <div class="slide l"><div class="pg"><span>impulso stone</span><span>5/5</span></div><h5>Salve para calcular no fim do mês</h5><span class="cta">Comente MARMITA</span></div>
+        </div>
+        <div class="refs"><span>ref · post a81f</span><span>ref · post e6aa</span><span>ref · post 4b02</span><span class="pill info">exemplo ilustrativo</span></div>
+      </div>
+      <div class="phone">
+        <div class="reel">
+          <span class="hook">Seu restaurante perde dinheiro nisso e nem percebe</span>
+          <div class="tl2">
+            <div><b>0–3s</b><span>Gancho com rosto, texto na tela</span></div>
+            <div><b>3–30s</b><span>3 erros no caixa, um por corte</span></div>
+            <div><b>30–38s</b><span>CTA: comente CAIXA</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="card meta-card">
+        <h3>Reels · lista de dicas</h3>
+        <div class="row"><span>por quê</span><span>Lista de dicas aparece 2,1× mais no top do que no controle (64 posts)</span></div>
+        <div class="row"><span>duração</span><span>38s, dentro da faixa do top do segmento</span></div>
+        <div class="row"><span>tom</span><span>Acolhedor, sem promessa, com dor concreta</span></div>
+        <div class="row"><span>refs</span><span class="refs"><span>c2d0</span><span>7e19</span><span>a81f</span></span></div>
+        <div class="row"><span>status</span><span><span class="pill ok">passou nas checagens</span> <span class="pill warn">aguardando revisão</span></span></div>
+        <span class="small muted">Números e posts de exemplo.</span>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h3>Especificação por formato</h3>
+        <div class="tbl"><table>
+          <thead><tr><th>Formato</th><th>O agente gera</th><th>Base</th></tr></thead>
+          <tbody>
+            <tr><td>Reels</td><td>Gancho de 3s, roteiro com tempos, texto na tela, legenda, CTA</td><td>Top do Instagram</td></tr>
+            <tr><td>Shorts</td><td>Mesmo roteiro adaptado, título, descrição</td><td>Top do YouTube</td></tr>
+            <tr><td>Carrossel</td><td>5 slides renderizados em PNG + legenda</td><td>Top do Instagram</td></tr>
+            <tr><td>Stories</td><td>3 a 5 telas com enquete ou caixinha</td><td><span class="pill warn">sem base externa</span></td></tr>
+            <tr><td>Estático</td><td>Frase principal, apoio, CTA</td><td>Top + histórico do Ads</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="card">
+        <h3>Playbook e guia detalhado</h3>
+        <p><b style="color:var(--ink)">Playbook da Stone</b> (entregável): padrões top × controle, o que evitar, formatos recomendados, perfis em destaque, exemplos reais, 5+ criativos aprovados prontos para produção e limitações. Gerado da base, atualiza quando os dados mudam.</p>
+        <p><b style="color:var(--ink)">Guia detalhado da semana</b> (extra, para o empreendedor): toda sexta às 7h, o tema da semana aprofundado em passo a passo, checklist e exercício. A Stone revisa e envia pela ferramenta dela; o sistema não guarda e-mails.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EMBAIXADORES -->
+<section class="band" id="embaixadores">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">Embaixadores</span>
+      <h2>Quem a Stone já tem, e como achar os próximos</h2>
+      <p class="lead">Os parceiros atuais servem de régua: se o scorecard não reconhecer quem a Stone já validou, ele está errado. Para completar as fotos, salve cada imagem em <code>docs/img/embaixadores/</code> com o @ como nome do arquivo.</p>
+    </div>
+    <div class="amb">
+      <article class="ab"><div class="ph"><img src="img/historico/criativo_15.jpg" alt="Chef Ruth em criativo do Impulso Stone"></div><div class="bd"><span class="nm">Chef Ruth</span><span class="hd">@chefrut</span><span class="pill ok sg">Gastronomia · CTR 3,59%</span></div></article>
+      <article class="ab"><div class="ph"><img src="img/embaixadores/rodrigofinancas.jpg" alt="Rodrigo Finanças" onerror="this.remove()"><span class="ini">RF</span><span class="hint">foto: rodrigofinancas.jpg</span></div><div class="bd"><span class="nm">Rodrigo Finanças</span><span class="hd">@rodrigofinancas</span><span class="pill info sg">Educação financeira</span></div></article>
+      <article class="ab"><div class="ph"><img src="img/embaixadores/indiacorrea.jpg" alt="Indianara Corrêa" onerror="this.remove()"><span class="ini">IC</span><span class="hint">foto: indiacorrea.jpg</span></div><div class="bd"><span class="nm">Indianara Corrêa</span><span class="hd">@indiacorrea</span><span class="pill info sg">Empreendedorismo e beleza</span></div></article>
+      <article class="ab"><div class="ph"><img src="img/embaixadores/wr_walterrodrigues.jpg" alt="Walter Rodrigues" onerror="this.remove()"><span class="ini">WR</span><span class="hint">foto: wr_walterrodrigues.jpg</span></div><div class="bd"><span class="nm">Walter Rodrigues</span><span class="hd">@wr_walterrodrigues</span><span class="pill info sg">Moda</span></div></article>
+      <article class="ab"><div class="ph"><img src="img/embaixadores/oijedai.jpg" alt="Anderson Jedai" onerror="this.remove()"><span class="ini">AJ</span><span class="hint">foto: oijedai.jpg</span></div><div class="bd"><span class="nm">Anderson Jedai</span><span class="hd">@oijedai</span><span class="pill info sg">Empreendedorismo social</span></div></article>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h3>Scorecard do criador</h3>
+        <div class="tbl"><table class="score-tbl">
+          <thead><tr><th>Dimensão</th><th>Como medir</th><th class="num">Peso</th></tr></thead>
+          <tbody>
+            <tr><td>Consistência</td><td>Lift mediano e % de posts no top; um viral isolado não basta</td><td class="num">25</td></tr>
+            <tr><td>Lead</td><td>% de posts com CTA, comentários ÷ curtidas</td><td class="num">20</td></tr>
+            <tr><td>Autenticidade</td><td>Empreendedor real, rosto, prova social, maquininha visível</td><td class="num">20</td></tr>
+            <tr><td>Marca</td><td>Tom, clareza, pilares do Impulso</td><td class="num">20</td></tr>
+            <tr><td>Atividade</td><td>Frequência nos últimos 90 dias</td><td class="num">15</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="card">
+        <h3>Alertas, fora da nota</h3>
+        <p>Parceria paga com concorrente (InfinitePay, PagBank, Cora), temas polêmicos, engajamento anômalo para a faixa, muitos comentários genéricos. Um alerta nunca fica escondido atrás de uma nota alta.</p>
+        <p>O sistema não infere idade, gênero ou outros atributos sensíveis. Ele faz a triagem; a Stone decide.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TELAS -->
+<section class="band alt" id="telas">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">Interfaces</span>
+      <h2>Uma tarefa principal: criar um criativo que funcione</h2>
+      <p class="lead">Três itens no menu e um filtro. O sistema primeiro <b>propõe</b> (sem gastar o modelo de linguagem) e só <b>produz</b> a peça quando alguém aprova a ideia. A Agenda sugere o que postar e quando, sem repetir segmentos e acompanhando as datas do comércio.</p>
+    </div>
+
+    <div class="sitemap">
+      <div class="sm-col">
+        <div class="sm-h"><span class="sm-n">1</span><div><b>Início</b><span>O que comunicar e o que está funcionando</span></div></div>
+        <ul>
+          <li><span class="sm-t go">ação</span>Escrever o objetivo e ver a proposta</li>
+          <li><span class="sm-t">vê</span>4 achados da semana em frase simples</li>
+          <li><span class="sm-t sub">clique</span>"Ver exemplos" <i>→ posts que provam o achado</i></li>
+        </ul>
+      </div>
+      <div class="sm-col">
+        <div class="sm-h"><span class="sm-n">2</span><div><b>Agenda</b><span>O que postar, quando, e o que revisar</span></div></div>
+        <ul>
+          <li><span class="sm-t go">ação</span>Abrir uma sugestão e criar o post</li>
+          <li><span class="sm-t">vê</span>Duas semanas, com datas comemorativas e horários</li>
+          <li><span class="sm-t sub">clique</span>Peça <i>→ prévia, aprovar ou pedir ajuste</i></li>
+        </ul>
+      </div>
+      <div class="sm-col">
+        <div class="sm-h"><span class="sm-n">3</span><div><b>Criadores</b><span>Quem chamar como embaixador</span></div></div>
+        <ul>
+          <li><span class="sm-t go">ação</span>Adicionar à lista de convites</li>
+          <li><span class="sm-t">vê</span>Cards com foto, nota e o motivo em uma linha</li>
+          <li><span class="sm-t sub">clique</span>Criador <i>→ perfil com os melhores posts</i></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="frame">
+      <div class="chrome"><i></i><i></i><i></i><div class="url" id="ui-url">localhost:8501/inicio</div></div>
+      <div class="ui" id="ui">
+        <div class="ui-top">
+          <span class="wordmark">impulso<br>stone</span>
+          <nav class="ui-nav" id="ui-nav" aria-label="Páginas do app"></nav>
+          <span class="spacer"></span>
+          <label class="seg-pick" for="f-seg">Segmento <select id="f-seg"><option>Todos os segmentos</option><option>Alimentação</option><option>Beleza</option><option>Moda</option><option>Serviços</option></select></label>
+        </div>
+        <div class="crumb" id="ui-crumb" hidden></div>
+        <div class="ui-body" id="ui-body"></div>
+        <div class="modal-layer" id="ui-modal" hidden><div class="modal" role="dialog" aria-modal="true" aria-labelledby="ui-modal-title" tabindex="-1" id="ui-modal-box"></div></div>
+        <div class="toast" id="ui-toast" role="status" hidden></div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>Teste de 10 minutos com colegas</h3>
+        <p>Abra o mockup, entregue as tarefas uma por vez e não explique nada. Anote onde a pessoa hesita, volta atrás ou pergunta.</p>
+        <ol class="tasks">
+          <li><b>"Crie um post para atrair donos de restaurante."</b><span>Esperado: escrever no Início, ler a proposta e clicar em "Criar este post".</span></li>
+          <li><b>"O que a Stone deveria postar na Black Friday, e em que horário?"</b><span>Esperado: abrir a Agenda e a sugestão de 27/11.</span></li>
+          <li><b>"Aprove uma peça e peça ajuste em outra."</b><span>Esperado: abrir as peças na Agenda e usar os dois botões.</span></li>
+          <li><b>"Quem você chamaria como embaixador de gastronomia? Por quê?"</b><span>Esperado: abrir Criadores e um perfil.</span></li>
+        </ol>
+      </div>
+      <div class="card">
+        <h3>Regras e fontes por trás da Agenda</h3>
+        <ul class="tasks">
+          <li><b>Sem repetição</b><span>O mesmo segmento não aparece em dias seguidos, e os 5 pilares do Impulso entram toda semana. Regras em código, sem custo de modelo.</span></li>
+          <li><b>Datas do comércio</b><span>Lista com antecedência: o post de preparação sai semanas antes, para o empreendedor ter tempo de agir. <code>config/datas_comemorativas.yaml</code></span></li>
+          <li><b>Horários</b><span>Orientação geral: Opinion Box (uso no Brasil), Buffer e Sprout Social (engajamento), todos de 2026. Os Insights da conta substituem quando a Stone liberar. <code>config/horarios.yaml</code></span></li>
+          <li><b>Sem publicação automática</b><span>A Agenda sugere; quem publica é a equipe (TAPI 4.3). Dá para exportar para o calendário do time.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRAZO -->
+<section class="band dark" id="prazo">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">Prazo</span>
+      <h2>Quatro dias até a Stone</h2>
+      <p class="lead">Com a base do Suno, o esforço vai para a coleta e as descobertas, que são a parte nova.</p>
+    </div>
+    <div class="days">
+      <div class="day"><span class="d">21–22/11</span><h3>Dados</h3><ul><li>Repositório novo com os módulos do Suno</li><li>App da Meta e perfis.csv</li><li>Coleta IG + YT, métricas, ranking</li></ul></div>
+      <div class="day"><span class="d">23/11</span><h3>Análise</h3><ul><li>Camadas 1 e 2</li><li>Rotular 50 posts e medir kappa</li><li>Em alta, radar, scorecard</li></ul></div>
+      <div class="day"><span class="d">24/11</span><h3>Produto</h3><ul><li>Agente, juiz e MCP</li><li>Tema Impulso no app e nos slides</li><li>Playbook e README</li></ul></div>
+      <div class="day"><span class="d">25/11</span><h3>Entrega</h3><ul><li>Demonstração presencial</li><li>Se apertar, cortar: Stories, transcrição, embeddings</li></ul></div>
+    </div>
+    <div class="risks">
+      <div class="risk"><b>Configuração da Meta trava</b><p>Fazer no primeiro dia. Plano B: mais peso no YouTube, sem cair para scraping.</p></div>
+      <div class="risk"><b>Sem texto de comentários de terceiros</b><p>Sinal de lead externo vira CTA + comentários ÷ curtidas.</p></div>
+      <div class="risk"><b>Limite gratuito (429)</b><p>Cliente do Suno: cache, espera, teto de chamadas e modo simulado.</p></div>
+      <div class="risk"><b>Padrão comum confundido com sucesso</b><p>Grupo controle e lift com intervalo de confiança.</p></div>
+    </div>
+  </div>
+</section>
+
+<footer>Arquitetura do projeto Stone × Inteli Academy · 21/11/2026. Criativos e CTRs vêm do histórico de campanhas entregue pela Stone; os números das telas são ilustrativos.</footer>
+
+<script>
+(function(){
+  // ---------------- dados de exemplo
+  var P={
+    a81f:{t:"3 erros no caixa",p:"@criador_alim_04",f:"Reels · 34s",g:["#00843d","#053b22"],h3:"Você perde dinheiro no caixa e nem vê",why:"Engajou 3 vezes mais que a média do próprio perfil"},
+    c2d0:{t:"O erro do troco",p:"@criador_alim_11",f:"Reels · 28s",g:["#6a4cf5","#2b1d7a"],h3:"Esse erro come seu lucro todo dia",why:"Engajou quase 3 vezes mais que a média do perfil"},
+    "0fd8":{t:"Cobrar sem constrangimento",p:"@criador_serv_03",f:"Reels · 36s",g:["#6a4cf5","#00843d"],h3:"Cobrar cliente sem perder a amizade",why:"Engajou 2 vezes mais que a média do perfil"},
+    b310:{t:"Conta pra gente o que você vende",p:"@criador_bel_05",f:"Imagem",g:["#c27a00","#00843d"],h3:"Conta pra gente: o que você vende?",why:"Muitos comentários com pedido de contato"},
+    e6aa:{t:"Quanto cobrar pela marmita",p:"@criador_alim_11",f:"Carrossel · 7",g:["#0f6aa8","#073a5e"],h3:"Você cobra o preço certo?",why:"Muito salvo e comentado"},
+    "4b02":{t:"Custo do gás na conta",p:"@criador_alim_09",f:"Carrossel · 6",g:["#00843d","#0b1f14"],h3:"R$ 3 por marmita que você não conta",why:"Engajou 2 vezes mais que a média do perfil"},
+    "91c3":{t:"Pix automático na loja",p:"@criador_alim_07",f:"Reels · 41s",g:["#0b1f14","#00843d"],h3:"Cliente fixo que esquece de pagar?",why:"Engajou 2 vezes mais que a média do perfil"},
+    "7e19":{t:"Acredite no seu sonho",p:"@criador_fin_02",f:"Reels · 22s",g:["#c27a00","#6b3d00"],h3:"Só depende de você",why:"Muitas curtidas, quase nenhum comentário ou clique"},
+    d771:{t:"Combo de Black Friday que dá lucro",p:"@criador_bel_08",f:"Reels · 31s",g:["#0b1f14","#c27a00"],h3:"Desconto de 50% pode te dar prejuízo",why:"Engajou 3 vezes mais que a média do perfil"}
+  };
+  var FINDS=[
+    {k:"padrão",nm:"Começar pela dor do cliente",txt:"Aparece 2 vezes mais nos posts que mais engajam do que nos outros.",posts:["a81f","c2d0","0fd8"],num:"41% dos melhores posts contra 18% dos demais · 58 posts"},
+    {k:"padrão",nm:"Convidar o público a comentar",txt:"Aparece 2 vezes mais nos melhores posts. No histórico da Stone, foi o que mais gerou clique.",posts:["b310","a81f","e6aa"],num:"32% contra 15% · 44 posts · CTR do Impulso: 8,8%"},
+    {k:"ferramenta do momento",nm:"Pix automático",txt:"As menções cresceram 140% em 3 meses, e é um produto que a Stone oferece.",posts:["91c3","0fd8"],num:"12 posts · acessibilidade 9 de 10",cls:"tool"},
+    {k:"evite",nm:"Frase motivacional",txt:"Faz sucesso em curtidas, mas quase ninguém clica ou comenta.",posts:["7e19"],num:"9% dos melhores posts contra 13% dos demais",cls:"avoid"}
+  ];
+  // tipo: transversal (fala com todo MPE) | setorial (dono de um tipo de negócio); grupo: indicado | reserva | base
+  var CREATORS=[
+    {id:"t1",nm:"Contadora de MEI (exemplo)",h:"@criador_fin_01",seg:"Transversal · finanças · micro",tipo:"Transversal · finanças",grupo:"indicado",ini:"CM",sc:86,line:"Explica imposto e caixa em vídeos curtos; muitos comentários com dúvidas reais.",why:["Fala com qualquer MPE, de qualquer setor","Comentários cheios de perguntas: público engajado","Tom simples e acolhedor, como o do Impulso"],s:[84,92,88,85,80],posts:["4b02","e6aa","a81f"],reserva:"Educador financeiro (exemplo)"},
+    {id:"t2",nm:"Mentora de vendas (exemplo)",h:"@criador_vendas_01",seg:"Transversal · vendas · médio",tipo:"Transversal · vendas",grupo:"indicado",ini:"MV",sc:83,line:"Roteiros de venda pelo WhatsApp; posta toda semana.",why:["Tema diferente do outro transversal (vendas, não finanças)","Lista de dicas, o formato que mais engaja agora","Posta toda semana"],s:[80,86,78,84,92],posts:["a81f","c2d0","b310"],reserva:"Consultor de marketing (exemplo)"},
+    {id:"s1",nm:"Banho e tosa (exemplo)",h:"@criador_pet_01",seg:"Setorial · pets · micro",tipo:"Setorial · pets",grupo:"indicado",ini:"BT",sc:85,line:"Dona do negócio, mostra a rotina e a maquininha Stone aparece nos vídeos.",why:["Setor sem parceiro atual da Stone","Empreendedora real, aparece nos vídeos","Usa a maquininha da Stone"],s:[86,74,95,82,70],posts:["91c3","0fd8","b310"],reserva:"Pet shop de bairro (exemplo)"},
+    {id:"s2",nm:"Eletricista (exemplo)",h:"@criador_casa_01",seg:"Setorial · casa e reparos · médio",tipo:"Setorial · casa e reparos",grupo:"indicado",ini:"E",sc:81,line:"Mostra orçamento, cobrança e atendimento; público de autônomos.",why:["Setor sem parceiro atual da Stone","Fala com autônomos, público central da Ton e do Impulso","Conversa alta nos comentários"],s:[78,88,90,72,80],posts:["0fd8","91c3","4b02"],reserva:"Marido de aluguel (exemplo)"},
+    {id:"s3",nm:"Personal trainer (exemplo)",h:"@criador_saude_01",seg:"Setorial · saúde e bem-estar · micro",tipo:"Setorial · saúde e bem-estar",grupo:"indicado",ini:"PT",sc:79,line:"Conta como montou o próprio estúdio; bom gancho nos 3 primeiros segundos.",why:["Setor sem parceiro atual da Stone","Começa pela dor do cliente, o padrão mais forte","Ainda pequeno: parceria mais acessível"],s:[76,80,86,78,74],posts:["c2d0","a81f","e6aa"],reserva:"Nutricionista (exemplo)"},
+    {id:"g1",nm:"Marmitaria (exemplo)",h:"@criador_gastro_01",seg:"Setorial · alimentação · micro",tipo:"Setorial · alimentação",grupo:"base",ini:"M",sc:84,line:"Nota alta, mas alimentação já tem parceira (Chef Ruth).",why:["Empreendedora real","Alimentação já está coberta pela Chef Ruth"],s:[86,74,95,82,70],posts:["a81f","4b02","e6aa"]},
+    {id:"ruth",nm:"Chef Ruth",h:"@chefrut",seg:"Setorial · alimentação · parceira atual",tipo:"Setorial · alimentação",grupo:"base",img:"img/historico/criativo_15.jpg",sc:82,line:"Já validada pela Stone: serve de régua para as outras notas.",why:["Parceira atual do Impulso","Criativo com ela teve CTR acima da média dos anúncios","Tom muito próximo do Impulso"],s:[80,76,92,93,64],posts:["4b02","a81f","91c3"],tag:["info","parceira atual"]},
+    {id:"g3",nm:"Hamburgueria (exemplo)",h:"@criador_gastro_03",seg:"Setorial · alimentação · médio",tipo:"Setorial · alimentação",grupo:"base",ini:"H",sc:73,line:"Bom engajamento, mas fez publi com um concorrente.",why:["Engajamento acima da média","Fez publicidade para um concorrente da Stone"],s:[68,58,70,84,88],posts:["7e19","0fd8","c2d0"],tag:["bad","publi com concorrente"]}
+  ];
+  var SUGESTOES=[
+    {nm:"Canal do MEI (exemplo)",info:"YouTube · 354 mil · transversal · finanças",motivo:"bio cita MEI e empreendedor",ok:true},
+    {nm:"Rede de empreendedoras (exemplo)",info:"YouTube · 81 mil · transversal · empreendedorismo",motivo:"bio cita negócio e empreendedora",ok:true},
+    {nm:"Contabilidade MEI (exemplo)",info:"Instagram · 16 mil · transversal · finanças",motivo:"bio cita MEI e microempreendedor",ok:true},
+    {nm:"Gestão de salão (exemplo)",info:"YouTube · 3,8 mil · setorial · beleza e estética",motivo:"bio cita negócios",ok:true},
+    {nm:"Confeitaria pet (exemplo)",info:"YouTube · 1,9 mil · setorial · alimentação",motivo:"bio cita negócio e vendas",ok:true},
+    {nm:"Finanças pessoais (exemplo)",info:"YouTube · 4,3 mi · transversal · finanças",motivo:"fala de finanças para todo mundo, não só MPE",ok:false}
+  ];
+  var COMPOSICAO={t:2,s:3,setores:[]};
+  var MACROS=["alimentação","beleza e estética","moda e acessórios","saúde e bem-estar","casa e reparos","serviços profissionais","educação e cursos","comércio de bairro","transporte e entregas","artesanato","pets"];
+  var DIMS=["Consistência","Gera conversa","Autenticidade","Combina com a marca","Frequência"];
+  var PIECES={
+    k1:{fmt:"Carrossel",seg:"Alimentação",pilar:"Educação financeira",title:"Marmita: quanto cobrar sem chutar?",status:"revisar",kind:"car",refs:["e6aa","4b02","a81f"],day:null,why:["Passo a passo é o formato de carrossel que mais engaja agora","Começa com uma pergunta sobre preço","Termina pedindo um comentário"]},
+    k2:{fmt:"Reels · 38s",seg:"Alimentação",pilar:"Educação financeira",title:"Seu restaurante perde dinheiro nisso e nem percebe",status:"revisar",kind:"reel",refs:["a81f","c2d0","0fd8"],day:"26",why:["Começa pela dor do cliente, o padrão mais forte da semana","Lista de 3 dicas, duração dentro da faixa dos melhores Reels","Pede para comentar CAIXA"]},
+    k3:{fmt:"Estático",seg:"Alimentação",pilar:"Educação financeira",title:"Quanto sobra de cada marmita?",status:"aprovada",kind:"static",refs:["4b02"],day:"23",why:["Estáticos simples sustentaram as campanhas de maior alcance do Impulso"]}
+  };
+  // agenda: 23/11 a 06/12/2026; hoje = 23/11
+  var DAYS=[
+    {n:"23",w:"seg"},{n:"24",w:"ter",sug:{seg:"Todos",pilar:"Comunidade",fmt:"Imagem",kind:"static",title:"Você vai participar da Black Friday? Conta pra gente",hook:"Conta pra gente: você vai entrar na Black Friday?",hora:"18h–20h",refs:["b310"],why:["Convidar a comentar teve o maior CTR do histórico do Impulso (8,8%)","Esquenta a conversa antes da Black Friday de 27/11","Comunidade ainda não apareceu nesta semana"]}},
+    {n:"25",w:"qua",sug:{seg:"Beleza",pilar:"Especialistas",fmt:"Reels",kind:"reel",title:"Black Friday sem queimar sua margem",hook:"Desconto de 50%? Faz essa conta antes",hora:"18h–20h",refs:["d771","a81f"],why:["Black Friday em 27/11: ainda dá tempo de ajustar os preços","Começar pela dor do cliente é o padrão mais forte agora","Beleza não aparece desde a semana passada"]}},
+    {n:"26",w:"qui"},
+    {n:"27",w:"sex",date:"Black Friday",sug:{seg:"Moda",pilar:"Gestão e vendas",fmt:"Stories",kind:"reel",title:"Checklist do dia da Black Friday",hook:"Antes de abrir a loja hoje, confira estes 3 pontos",hora:"20h–22h",refs:["0fd8"],stories:true,why:["Sexta costuma ser dia fraco, mas a Black Friday justifica","Moda não repete o segmento de ontem","Stories não têm base externa: use com cuidado"]}},
+    {n:"28",w:"sáb",weak:true},
+    {n:"29",w:"dom",sug:{seg:"Serviços",pilar:"Histórias reais",fmt:"Reels",kind:"reel",title:"Como foi a Black Friday de quem vende serviço",hook:"Ela vende serviço e mesmo assim lotou a agenda na Black Friday",hora:"20h–22h",refs:["0fd8","b310"],why:["Pessoa real como prova social funcionou no histórico (Chef Ruth, CTR 3,59%)","Histórias reais ainda não apareceram nesta semana"]}},
+    {n:"30",w:"seg",date:"13º · Cyber Monday",sug:{seg:"Todos",pilar:"Educação financeira",fmt:"Carrossel",kind:"car",title:"13º salário: separe o do negócio e o seu",hook:"Seu 13º vai sumir no caixa da loja?",hora:"18h–20h",refs:["e6aa","4b02"],why:["Prazo da 1ª parcela do 13º: 30/11","Carrossel passo a passo é o formato que mais engaja agora","Educação financeira abre a semana"]}},
+    {n:"01",w:"ter",sug:{seg:"Alimentação",pilar:"Gestão e vendas",fmt:"Carrossel",kind:"car",title:"Encomendas de Natal: como não perder pedidos",hook:"Dezembro chegou: sua lista de encomendas está pronta?",hora:"18h–20h",refs:["e6aa"],why:["Natal em 25/12: o empreendedor precisa de cerca de 30 dias para se preparar","Alimentação não aparece desde quinta, 26/11"]}},
+    {n:"02",w:"qua",sug:{seg:"Beleza",pilar:"Especialistas",fmt:"Reels",kind:"reel",title:"Agenda cheia em dezembro: como encaixar mais clientes",hook:"Seu salão vai lotar em dezembro. Você está pronta?",hora:"18h–20h",refs:["d771"],why:["Dezembro é o mês mais cheio para beleza","Especialistas é o pilar que falta nesta semana"]}},
+    {n:"03",w:"qui",sug:{seg:"Todos",pilar:"Comunidade",fmt:"Imagem",kind:"static",title:"Qual foi a melhor venda do seu ano?",hook:"Conta pra gente: qual foi a melhor venda do seu ano?",hora:"12h–14h",refs:["b310"],why:["Convidar a comentar teve o maior CTR do histórico","Quinta é um dos dias mais fortes da semana"]}},
+    {n:"04",w:"sex",weak:true},{n:"05",w:"sáb",weak:true},
+    {n:"06",w:"dom",sug:{seg:"Moda",pilar:"Histórias reais",fmt:"Reels",kind:"reel",title:"Como uma loja de bairro se preparou para o Natal",hook:"Ela começou a preparar o Natal em novembro. Olha o que mudou",hora:"20h–22h",refs:["b310","0fd8"],why:["Histórias reais fecham a semana","Moda não aparece desde a semana passada"]}}
+  ];
+  var DATES=[["Black Friday","27/11"],["Cyber Monday","30/11"],["13º (1ª parcela)","30/11"],["13º (2ª parcela)","20/12"],["Natal","25/12"],["Réveillon","31/12"],["Carnaval","09/02/27"]];
+  var ST={page:"inicio",sub:null,seg:"Todos os segmentos",ctx:[],w:[25,20,20,20,15],view:"cal"};
+
+  var $=function(id){return document.getElementById(id);};
+  var body=$("ui-body"), modal=$("ui-modal"), box=$("ui-modal-box"), toastEl=$("ui-toast"), lastFocus=null, toastT=null, backTo=null, nextId=4, draft=null;
+  function pill(k,t){return '<span class="pill '+k+'">'+t+'</span>';}
+  function segLabel(){return ST.seg==="Todos os segmentos"?"todos os segmentos":ST.seg;}
+  function toRevise(){var n=0;for(var k in PIECES)if(PIECES[k].status==="revisar")n++;return n;}
+  function statusPill(s){return s==="aprovada"?pill("ok","aprovada"):s==="ajuste"?pill("warn","ajuste pedido"):pill("info","para revisar");}
+  function toast(msg){toastEl.textContent=msg;toastEl.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){toastEl.hidden=true;},2800);}
+  function miniPosts(ids,from){return '<div class="mini-posts">'+ids.map(function(id){var p=P[id];return '<button type="button" data-post="'+id+'" data-from="'+(from||"")+'"><div class="th" style="background:linear-gradient(160deg,'+p.g[0]+','+p.g[1]+')"><span>'+p.f+'</span><b>'+p.t+'</b></div><div class="mt">'+p.p+'</div></button>';}).join("")+'</div>';}
+  function dayOf(n){return DAYS.filter(function(d){return d.n===n;})[0];}
+
+  // ---------------- modais
+  function openModal(title,html){
+    if(modal.hidden) lastFocus=document.activeElement;
+    box.innerHTML='<div class="modal-h"><h4 id="ui-modal-title">'+title+'</h4><button class="modal-x" type="button" data-close aria-label="Fechar">×</button></div>'+html;
+    modal.hidden=false; box.focus();
+  }
+  function closeModal(){modal.hidden=true;box.innerHTML="";if(lastFocus&&lastFocus.focus&&document.body.contains(lastFocus))lastFocus.focus();}
+  function findModal(i){
+    var x=FINDS[i];
+    openModal(x.nm,'<p class="small muted">'+x.txt+'</p>'+miniPosts(x.posts,"f"+i)+'<details class="more"><summary>Ver os números</summary><p class="small muted">'+x.num+'. Recorte: '+segLabel()+', últimos 90 dias.</p></details>'+
+      '<div class="btns">'+(x.cls==="avoid"?'':'<button class="btn pri" type="button" data-use="'+i+'">Criar com isso</button>')+'<button class="btn" type="button" data-close>Fechar</button></div>');
+  }
+  function postModal(id,back){
+    var p=P[id]; backTo=back||null;
+    openModal(p.t,(back?'<button class="back" type="button" data-back>← Voltar</button>':'')+
+      '<dl class="dl"><dt>perfil</dt><dd>'+p.p+'</dd><dt>formato</dt><dd>'+p.f+'</dd><dt>começa com</dt><dd>"'+p.h3+'"</dd><dt>resultado</dt><dd>'+p.why+'</dd></dl>'+
+      '<div class="btns"><button class="btn" type="button" data-toast="Abriria o post original no Instagram">Abrir no Instagram ↗</button></div>');
+  }
+  var HORA_FONTES='<details class="more"><summary>De onde vem o horário</summary><p class="small muted">Orientação geral, não previsão. Combina a Opinion Box (quando os brasileiros mais usam o Instagram: 18h–20h e 20h–0h), o Buffer (9,6 milhões de posts) e a Sprout Social, todos de 2026. Quando a Stone liberar os Insights da conta, o horário real do público substitui esta faixa.</p></details>';
+  function proposalModal(s,dayN){
+    draft={s:s,day:dayN};
+    var when=dayN?(dayOf(dayN).w+' '+dayN+'/'+(+dayN>=23?'11':'12')+' · '+s.hora):'Sem data · escolha um dia na Agenda';
+    openModal('Proposta',
+      '<dl class="dl"><dt>post</dt><dd><b>'+s.title+'</b></dd><dt>quando</dt><dd>'+when+'</dd><dt>segmento</dt><dd>'+s.seg+'</dd><dt>formato</dt><dd>'+s.fmt+(s.stories?' '+pill("warn","sem base externa"):'')+'</dd><dt>pilar</dt><dd>'+s.pilar+'</dd><dt>começa com</dt><dd>"'+s.hook+'"</dd></dl>'+
+      '<div class="why"><b>Por que esta sugestão</b><ul>'+s.why.map(function(w){return '<li>'+w+'</li>';}).join("")+'</ul><button class="linkbtn" type="button" data-draft-refs>Ver os posts de referência</button></div>'+
+      (dayN?HORA_FONTES:'')+
+      '<div class="btns"><button class="btn pri" type="button" data-create>Criar este post</button><button class="btn" type="button" data-other>Outra ideia</button></div>'+
+      '<span class="cost">A proposta usa só a base de dados. O modelo de linguagem entra quando você clica em "Criar este post".</span>');
+  }
+  function adjustModal(id){
+    var pc=PIECES[id];
+    openModal("Pedir ajuste",'<p>"'+pc.title+'"</p><label for="aj-cat">O que não está bom<select id="aj-cat"><option>Fora do tom do Impulso</option><option>Gancho fraco</option><option>Informação a conferir</option><option>Outro</option></select></label><label for="aj-txt">Explique em uma frase<textarea id="aj-txt" rows="3">Trazer um número do caixa logo no começo.</textarea></label><p class="small muted">O sistema gera uma nova versão seguindo o seu pedido.</p><div class="btns"><button class="btn pri" type="button" data-adjust="'+id+'">Pedir nova versão</button><button class="btn" type="button" data-close>Cancelar</button></div>');
+  }
+  var refsBack=null;
+  function refsModal(ids,from,title,back){
+    refsBack=back||null;
+    openModal(title||"Posts de referência",(back?'<button class="back" type="button" data-back-refs>← Voltar</button>':'')+'<p class="small muted">Estão entre os que mais engajaram nos últimos 90 dias.</p>'+miniPosts(ids,from));
+  }
+  function draftRefs(){refsModal(draft.s.refs,"d","Posts de referência",function(){proposalModal(draft.s,draft.day);});}
+  function weightsModal(){
+    openModal("Ajustar critérios",'<p class="small muted">Quanto cada critério pesa na nota dos criadores.</p><div style="display:grid;gap:10px">'+DIMS.map(function(d,i){return '<label class="slider" for="uw_'+i+'"><span>'+d+'</span><input type="range" min="0" max="50" value="'+ST.w[i]+'" id="uw_'+i+'" data-w="'+i+'"><span class="num" id="uwv_'+i+'">'+ST.w[i]+'</span></label>';}).join("")+'</div><div class="btns"><button class="btn pri" type="button" data-close data-toast="Critérios salvos">Salvar</button></div>');
+  }
+
+  // ---------------- páginas
+  function pgInicio(){
+    return '<div class="ask"><h3>O que você quer comunicar?</h3><div class="row"><input id="ui-obj" placeholder="Ex.: atrair donos de restaurante" value="Atrair donos de restaurante" aria-label="Objetivo"><button class="btn pri" type="button" data-propose>Ver proposta</button></div>'+
+      (ST.ctx.length?'<div class="ctx">Usando: '+ST.ctx.map(function(c,i){return '<span class="chip">'+c+'<button type="button" data-unctx="'+i+'" aria-label="Remover">×</button></span>';}).join("")+'</div>':'<span class="note">Primeiro você vê a ideia; a peça só é produzida se você aprovar.</span>')+'</div>'+
+      '<div class="find-h"><h3>O que está funcionando em '+segLabel()+'</h3><span class="small muted">Atualizado em 20/11 · posts dos últimos 90 dias</span></div>'+
+      '<div class="finds">'+FINDS.map(function(x,i){return '<article class="find '+(x.cls||"")+'"><span class="ico">'+x.k+'</span><b>'+x.nm+'</b><p>'+x.txt+'</p><div class="act">'+(x.cls==="avoid"?'':'<button class="btn pri sm" type="button" data-use="'+i+'">Criar com isso</button>')+'<button class="linkbtn" type="button" data-find="'+i+'">Ver exemplos</button></div></article>';}).join("")+'</div>';
+  }
+  function thumb(pc){return pc.kind==="reel"?'<span class="tn" style="background:#0b1f14;color:#b4f50f">REELS</span>':pc.kind==="car"?'<span class="tn" style="background:#b4f50f;color:#0c2a1b">CARROSSEL</span>':'<span class="tn" style="background:#00843d;color:#fff">IMAGEM</span>';}
+  function preview(pc){
+    if(pc.kind==="car") return '<div class="carousel"><div class="slide l" style="flex-basis:160px"><div class="pg"><span>impulso stone</span><span>1/5</span></div><h5 style="font-size:1rem">'+pc.title+'</h5><span class="wm">arraste →</span></div><div class="slide g" style="flex-basis:160px"><div class="pg"><span>passo 1</span><span>2/5</span></div><span class="n" style="font-size:2rem">01</span><h5 style="font-size:.95rem">Primeiro passo</h5></div><div class="slide k" style="flex-basis:160px"><div class="pg"><span>passo 2</span><span>3/5</span></div><span class="n" style="font-size:2rem">02</span><h5 style="font-size:.95rem">Segundo passo</h5></div><div class="slide l" style="flex-basis:160px"><div class="pg"><span>impulso stone</span><span>5/5</span></div><h5 style="font-size:.95rem">Salve para usar depois</h5><span class="cta">Comente QUERO</span></div></div>';
+    if(pc.kind==="reel") return '<div class="phone" style="max-width:220px"><div class="reel"><span class="hook">'+pc.title+'</span><div class="tl2"><div><b>0–3s</b><span>Gancho com rosto</span></div><div><b>3–30s</b><span>3 pontos, um por corte</span></div><div><b>30–38s</b><span>Chamada para comentar</span></div></div></div></div>';
+    return '<div class="slide l" style="max-width:240px;flex-basis:auto"><div class="pg"><span>impulso stone</span><span>1/1</span></div><h5>'+pc.title+'</h5><span class="cta">Comente aqui</span></div>';
+  }
+  function pgPiece(id){
+    var pc=PIECES[id], when=pc.day?dayOf(pc.day).w+' '+pc.day+'/'+(+pc.day>=23?'11':'12')+(pc.hora?' · '+pc.hora:''):'sem data na agenda';
+    return '<div class="mh"><h3>'+pc.title+'</h3>'+statusPill(pc.status)+'</div><span class="small muted">'+pc.fmt+' · '+pc.seg+' · '+pc.pilar+' · '+when+'</span><div class="two"><div class="panel">'+preview(pc)+'</div>'+
+      '<div class="panel"><div class="why"><b>Por que este criativo</b><ul>'+pc.why.map(function(w){return '<li>'+w+'</li>';}).join("")+'</ul><button class="linkbtn" type="button" data-refs="'+id+'">Ver os '+pc.refs.length+' posts que inspiraram</button></div>'+
+      (pc.status==="revisar"?'<div class="btns"><button class="btn pri" type="button" data-approve="'+id+'">Aprovar</button><button class="btn" type="button" data-adjust-open="'+id+'">Pedir ajuste</button></div>':pc.status==="aprovada"?'<div class="btns"><button class="btn pri" type="button" data-toast="Baixaria as imagens e o roteiro em ZIP">Baixar arquivos</button></div>':'<p class="small muted">Nova versão sendo gerada com o seu pedido.</p>')+
+      '<details class="more"><summary>Conferências automáticas · 4 de 4 ✓</summary><div class="check"><div class="ok">Posts de referência existem na base</div><div class="ok">Tem chamada para ação</div><div class="ok">Sem promessas exageradas</div><div class="ok">Linguagem simples para o público</div></div><p class="small muted">Nota do avaliador automático: 8,1 de 10.</p></details></div></div>';
+  }
+  function pgAgenda(){
+    if(ST.sub) return pgPiece(ST.sub);
+    var n=toRevise(), head='<div class="find-h"><h3>Agenda · 23/11 a 06/12</h3><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="small muted">'+(n?n+' para revisar':'Tudo revisado')+'</span><div class="toggle" role="group" aria-label="Visualização"><button type="button" data-view="cal" aria-pressed="'+(ST.view==="cal")+'">Calendário</button><button type="button" data-view="list" aria-pressed="'+(ST.view==="list")+'">Lista</button></div></div></div>';
+    if(ST.view==="list"){
+      var rows=Object.keys(PIECES).map(function(id){var pc=PIECES[id];return '<button class="prow" type="button" data-piece="'+id+'">'+thumb(pc)+'<span><span class="fm">'+pc.fmt+' · '+(pc.day?pc.day+'/'+(+pc.day>=23?'11':'12'):'sem data')+'</span><b>'+pc.title+'</b></span>'+statusPill(pc.status)+'</button>';}).join("");
+      return head+'<div class="list">'+rows+'</div>';
+    }
+    var cells=["seg","ter","qua","qui","sex","sáb","dom"].map(function(w){return '<div class="dh">'+w+'</div>';}).join("")+DAYS.map(function(d,i){
+      var inner='<div class="num"><span>'+d.n+'</span>'+(i===0?'<small>hoje</small>':'')+'</div>'+(d.date?'<span class="dt">'+d.date+'</span>':'');
+      var pid=null;for(var k in PIECES)if(PIECES[k].day===d.n)pid=k;
+      if(pid){var pc=PIECES[pid];inner+='<button class="it pc" type="button" data-piece="'+pid+'"><span class="meta">'+pc.fmt+' · '+pc.seg+'</span><b>'+pc.title+'</b>'+statusPill(pc.status)+'</button>';}
+      else if(d.sug){inner+='<button class="it sug" type="button" data-sug="'+d.n+'"><span class="meta">'+d.sug.fmt+' · '+d.sug.seg+' · '+d.sug.hora+'</span><b>'+d.sug.title+'</b></button>';}
+      else if(d.weak){inner+='<span class="empty">Dia de pouco engajamento</span>';}
+      return '<div class="day'+(d.weak&&!pid?' weak':'')+(i===0?' today':'')+'">'+inner+'</div>';
+    }).join("");
+    var semData=Object.keys(PIECES).filter(function(k){return !PIECES[k].day;});
+    return head+'<div class="agenda"><div class="cal-wrap"><div class="cal">'+cells+'</div></div><div style="display:grid;gap:10px">'+
+      '<div class="side-box"><h4>Legenda</h4><span class="lg"><i style="border:1.5px dashed var(--forest)"></i>Sugestão: clique para ver a proposta</span><span class="lg"><i style="background:var(--forest-deep)"></i>Peça criada</span></div>'+
+      '<div class="side-box"><h4>Próximas datas</h4><ul>'+DATES.map(function(x){return '<li><span>'+x[0]+'</span><span>'+x[1]+'</span></li>';}).join("")+'</ul></div>'+
+      (semData.length?'<div class="side-box"><h4>Sem data ('+semData.length+')</h4>'+semData.map(function(k){return '<button class="it pc" type="button" data-piece="'+k+'"><span class="meta">'+PIECES[k].fmt+'</span><b>'+PIECES[k].title+'</b></button>';}).join("")+'</div>':'')+
+      '<button class="btn" type="button" data-toast="Exportaria a agenda para o calendário do time (.ics)">Exportar para o calendário</button></div></div>';
+  }
+  function av(c){return c.img?'<img src="'+c.img+'" alt="">':'<span>'+c.ini+'</span>';}
+  function pgCriadores(){
+    if(ST.sub){
+      var c=CREATORS.filter(function(x){return x.id===ST.sub;})[0];
+      return '<div class="profile-h"><span class="av">'+(c.img?'<img src="'+c.img+'" alt="">':c.ini)+'</span><div><h3>'+c.nm+'</h3><span class="small muted">'+c.h+' · '+c.seg+'</span>'+(c.tag?'<div style="margin-top:6px">'+pill(c.tag[0],c.tag[1])+'</div>':'')+'</div><span class="big">'+c.sc+' <small>de 100</small></span></div>'+
+        '<div class="two"><div class="panel"><div class="why"><b>Por que '+(c.sc>=78?'vale chamar':'pensar duas vezes')+'</b><ul>'+c.why.map(function(w){return '<li>'+w+'</li>';}).join("")+'</ul></div>'+
+        '<details class="more"><summary>Ver nota detalhada</summary><div class="bars">'+DIMS.map(function(d,i){return '<div class="brow"><span>'+d+'</span><div class="track"><div class="fill" style="width:'+c.s[i]+'%"></div></div><span class="num">'+c.s[i]+'</span></div>';}).join("")+'</div></details></div>'+
+        '<div class="panel"><h4>Posts que mais engajaram</h4>'+miniPosts(c.posts,"")+'</div></div>'+
+        '<div class="btns"><button class="btn pri" type="button" data-toast="'+c.nm+' entrou na lista de convites">Adicionar à lista de convites</button></div>';
+    }
+    function card(c){return '<button class="ccard" type="button" data-creator="'+c.id+'"><div class="ph">'+av(c)+'</div><div class="bd"><span class="pill '+(c.tipo.indexOf("Transversal")===0?'ai':'info')+'" style="justify-self:start">'+c.tipo+'</span><div class="top"><span class="nm">'+c.nm+'</span><span class="sc">'+c.sc+'</span></div><p>'+c.line+'</p>'+(c.reserva?'<span class="small muted">Reserva: '+c.reserva+'</span>':'')+(c.tag?pill(c.tag[0],c.tag[1]):'')+'</div></button>';}
+    var ind=CREATORS.filter(function(c){return c.grupo==="indicado";}), base=CREATORS.filter(function(c){return c.grupo!=="indicado";});
+    var setoresTxt=COMPOSICAO.setores.length?'dos setores priorizados ('+COMPOSICAO.setores.join(", ")+')':'de setores sem parceiro atual';
+    return (sugPendentes?'<div class="sugbar"><div><b>'+SUGESTOES.filter(function(s){return s.ok;}).length+' perfis novos sugeridos para a base de análise</b><span class="small muted">O agente encontrou no YouTube e validou na API · semana de 22/11</span></div><button class="btn pri sm" type="button" data-sugestoes>Revisar</button></div>':'')+
+      '<div class="find-h"><h3>Indicados para contato</h3><div style="display:flex;gap:14px"><button class="linkbtn" type="button" data-composicao>Ajustar composição</button><button class="linkbtn" type="button" data-weights>Ajustar critérios</button></div></div>'+
+      '<p class="small muted">'+COMPOSICAO.t+' que falam com todos os empreendedores + '+COMPOSICAO.s+' '+setoresTxt+'. Cada um tem uma reserva. Quem decide o contato é a Stone.</p>'+
+      '<div class="cgrid five">'+ind.map(card).join("")+'</div>'+
+      '<details class="more"><summary>Toda a base de criadores ('+base.length+' de exemplo · na prática, 30 a 50)</summary><div class="cgrid" style="margin-top:10px">'+base.map(card).join("")+'</div></details>'+
+      '<span class="small muted">Perfis fictícios, exceto a Chef Ruth, que é parceira atual e serve de régua.</span>';
+  }
+  var sugPendentes=true;
+  function sugestoesModal(){
+    openModal("Perfis sugeridos para a base de análise",'<p class="small muted">Os propostos já vêm marcados. Eles entram na base para o sistema aprender o que engaja; isso não é indicação de parceria.</p><div class="sugl">'+
+      SUGESTOES.map(function(s,i){return '<label class="sugrow" for="sg'+i+'"><input type="checkbox" id="sg'+i+'"'+(s.ok?' checked':'')+'><span><b>'+s.nm+'</b><span class="small muted">'+s.info+'</span><span class="small">'+(s.ok?'✓ ':'⚠ ')+s.motivo+'</span></span></label>';}).join("")+
+      '</div><details class="more"><summary>Ver 216 recusados (poucos seguidores, parados, fora do público)</summary><p class="small muted">Cada recusado fica com o motivo registrado e pode ser resgatado.</p></details><div class="btns"><button class="btn pri" type="button" data-confirmar-sug>Confirmar selecionados</button><button class="btn" type="button" data-close>Depois</button></div>');
+  }
+  function composicaoModal(){
+    openModal("Composição dos indicados",'<div class="comp"><label for="cp-t">Transversais (falam com todo MPE)<input type="number" id="cp-t" min="0" max="5" value="'+COMPOSICAO.t+'"></label><label for="cp-s">Setoriais (donos de um tipo de negócio)<input type="number" id="cp-s" min="0" max="8" value="'+COMPOSICAO.s+'"></label></div>'+
+      '<p class="small muted">Setores prioritários. Sem nenhum marcado, o sistema sugere primeiro os setores em que a Stone ainda não tem parceiro.</p><div class="macros">'+
+      MACROS.map(function(m,i){return '<label for="mc'+i+'"><input type="checkbox" id="mc'+i+'" value="'+m+'"'+(COMPOSICAO.setores.indexOf(m)>=0?' checked':'')+'> '+m+'</label>';}).join("")+
+      '</div><div class="btns"><button class="btn pri" type="button" data-salvar-comp>Salvar</button><button class="btn" type="button" data-close>Cancelar</button></div>');
+  }
+
+  // ---------------- render
+  var LABEL={inicio:"Início",agenda:"Agenda",criadores:"Criadores"};
+  function render(){
+    var n=toRevise();
+    $("ui-nav").innerHTML=["inicio","agenda","criadores"].map(function(p){return '<button type="button" data-page="'+p+'"'+(ST.page===p?' aria-current="page"':'')+'>'+LABEL[p]+(p==="agenda"&&n?' <span class="badge-n">'+n+'</span>':'')+'</button>';}).join("");
+    var crumb=$("ui-crumb"), url="localhost:8501/"+ST.page;
+    if(ST.sub){
+      var name=ST.page==="criadores"?CREATORS.filter(function(c){return c.id===ST.sub;})[0].nm:PIECES[ST.sub].fmt;
+      crumb.innerHTML='<button type="button" data-crumb>← '+LABEL[ST.page]+'</button><span>›</span><span>'+name+'</span>';
+      crumb.hidden=false; url+="?id="+ST.sub;
+    } else crumb.hidden=true;
+    $("ui-url").textContent=url;
+    body.innerHTML=ST.page==="inicio"?pgInicio():ST.page==="agenda"?pgAgenda():pgCriadores();
+  }
+  function go(page,sub){ST.page=page;ST.sub=sub||null;render();}
+  var IDEAS=["Seu restaurante perde dinheiro nisso e nem percebe","3 sinais de que o preço do seu prato está errado","O custo que todo dono de restaurante esquece"];
+  function proposalFromObjective(){
+    var obj=($("ui-obj")||{}).value||"seu objetivo";
+    return {seg:ST.seg==="Todos os segmentos"?"Todos":ST.seg,pilar:"Educação financeira",fmt:"Reels · lista de dicas",kind:"reel",title:IDEAS[0],hook:"Você perde dinheiro no caixa e nem vê",hora:"18h–20h",refs:["a81f","c2d0","0fd8"],
+      why:["Objetivo: "+obj,"Lista de dicas é o formato de Reels que mais engaja agora","Começa pela dor do cliente, o padrão mais forte da semana"].concat(ST.ctx.map(function(c){return "Segue o pedido: "+c;}))};
+  }
+
+  // ---------------- eventos
+  $("ui").addEventListener("click",function(e){
+    var b=e.target.closest("button"); if(!b) return;
+    var d=b.dataset;
+    if(d.page) return go(d.page);
+    if(d.crumb!==undefined) return go(ST.page);
+    if(d.view){ST.view=d.view;return render();}
+    if(d.find) return findModal(+d.find);
+    if(d.use){var nm=FINDS[+d.use].nm;if(ST.ctx.indexOf(nm)<0)ST.ctx.push(nm);if(!modal.hidden)closeModal();go("inicio");var inp=$("ui-obj");if(inp)inp.focus();return toast("Adicionado ao pedido: "+nm);}
+    if(d.unctx!==undefined){ST.ctx.splice(+d.unctx,1);return render();}
+    if(d.propose!==undefined) return proposalModal(proposalFromObjective(),null);
+    if(d.sug) return proposalModal(dayOf(d.sug).sug,d.sug);
+    if(d.other!==undefined){
+      var s=draft.s;
+      if(!s.hooks) s.hooks=[s.hook,"Você já passou por isso? "+s.title,"A pergunta que todo empreendedor deveria se fazer: "+s.title.toLowerCase()];
+      s.hooks.push(s.hooks.shift()); s.hook=s.hooks[0];
+      if(!draft.day){IDEAS.push(IDEAS.shift());s.title=IDEAS[0];}
+      proposalModal(s,draft.day); return toast("Nova ideia, ainda sem custo de produção");
+    }
+    if(d.draftRefs!==undefined) return draftRefs();
+    if(d.backRefs!==undefined&&refsBack) return refsBack();
+    if(d.create!==undefined){
+      var s2=draft.s, id="k"+(nextId++);
+      PIECES[id]={fmt:s2.fmt,seg:s2.seg,pilar:s2.pilar,title:s2.title,status:"revisar",kind:s2.kind,refs:s2.refs,day:draft.day,hora:s2.hora,why:s2.why};
+      ST.ctx=[]; closeModal(); go("agenda"); return toast("Produzindo… pronto. A peça está na Agenda para revisar.");
+    }
+    if(d.post){var from=d.from||"";return postModal(d.post,from.charAt(0)==="f"?function(){findModal(+from.slice(1));}:from==="d"?draftRefs:from.charAt(0)==="r"?function(){refsModal(PIECES[from.slice(1)].refs,from,"Posts que inspiraram esta peça");}:null);}
+    if(d.back!==undefined&&backTo) return backTo();
+    if(d.refs) return refsModal(PIECES[d.refs].refs,"r"+d.refs,"Posts que inspiraram esta peça");
+    if(d.piece) return go("agenda",d.piece);
+    if(d.creator) return go("criadores",d.creator);
+    if(d.approve){PIECES[d.approve].status="aprovada";render();return toast("Aprovada. Os arquivos já podem ser baixados.");}
+    if(d.adjustOpen) return adjustModal(d.adjustOpen);
+    if(d.adjust){PIECES[d.adjust].status="ajuste";closeModal();render();return toast("Pedido enviado. Uma nova versão vai aparecer aqui.");}
+    if(d.weights!==undefined) return weightsModal();
+    if(d.sugestoes!==undefined) return sugestoesModal();
+    if(d.confirmarSug!==undefined){var n=box.querySelectorAll('.sugrow input:checked').length;sugPendentes=false;closeModal();render();return toast(n+" perfis entram na base na próxima coleta");}
+    if(d.composicao!==undefined) return composicaoModal();
+    if(d.salvarComp!==undefined){COMPOSICAO.t=+$("cp-t").value||0;COMPOSICAO.s=+$("cp-s").value||0;COMPOSICAO.setores=[].map.call(box.querySelectorAll('.macros input:checked'),function(x){return x.value;});closeModal();render();return toast("Composição salva. Os indicados são recalculados na próxima análise.");}
+    if(d.toast) toast(d.toast);
+    if(d.close!==undefined) closeModal();
+  });
+  $("ui").addEventListener("keydown",function(e){if(e.key==="Escape"&&!modal.hidden)closeModal();});
+  modal.addEventListener("click",function(e){if(e.target===modal)closeModal();});
+  $("ui").addEventListener("input",function(e){var k=e.target.dataset&&e.target.dataset.w;if(k===undefined)return;ST.w[+k]=+e.target.value;$("uwv_"+k).textContent=e.target.value;});
+  $("f-seg").addEventListener("change",function(e){ST.seg=e.target.value;render();toast("Mostrando "+segLabel()+" nas 3 páginas");});
+  render();
+})();
+</script>
+</body>
+</html>
