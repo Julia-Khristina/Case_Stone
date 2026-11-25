@@ -738,6 +738,8 @@ def renderizar(d: dict, frase: Callable[[dict], str]) -> str:
                  f"<div class='ads-card bom'><h4>{_icone('m6 12.5 4 4 8-9')}Funcionou</h4><small>CTR por padrão de anúncio</small><ul>{_linhas_ads(ads.get('funcionou', []))}</ul></div>"
                  f"<div class='ads-card ruim'><h4>{_icone('M6 6l12 12M18 6 6 18')}Não funcionou</h4><small>CTR por padrão de anúncio</small><ul>{_linhas_ads(ads.get('nao_funcionou', []))}</ul></div>"
                  "</div><p class='m'>Fonte interna: histórico de campanhas, fev a out/2026. Quando anúncio e orgânico discordam, o playbook segue o anúncio.</p>")
+    if not ads.get("funcionou") and not ads.get("nao_funcionou"):
+        ads_bloco = ""                   # sem os dados internos (versão pública): a seção não aparece vazia
     faltam = MINIMO_CRIATIVOS - len(d["criativos"])
     n_ok = len(d["criativos"])
     aviso = (f"<div class='progresso-criativos'><span class='pc-barra'><i style='width:{n_ok / MINIMO_CRIATIVOS * 100:.0f}%'></i></span>"

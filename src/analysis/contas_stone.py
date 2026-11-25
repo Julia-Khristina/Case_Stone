@@ -48,8 +48,9 @@ def carregar(pasta: Path = PROC) -> Optional[pd.DataFrame]:
                       on="post_id", how="left", suffixes=("", "_rot"))
     visual = pd.DataFrame(read_jsonl(pasta / "rotulos_visuais.jsonl"))
     if not visual.empty:
-        from src.analysis.camada2 import PROMPT_VERSAO
-        visual = visual[visual.get("prompt_versao") == PROMPT_VERSAO]
+        from src.analysis.camada2 import VERSOES_ACEITAS   # v2 (sem áudio) continua valendo onde não há v3
+        visual = visual[visual.get("prompt_versao").isin(VERSOES_ACEITAS)]
+        visual = visual.assign(_v=visual["prompt_versao"].map(VERSOES_ACEITAS.index)).sort_values("_v").drop(columns="_v")
     if not visual.empty:
         visual["post_id"] = visual["post_id"].astype(str)
         df = df.merge(visual.drop_duplicates("post_id", keep="last").drop(

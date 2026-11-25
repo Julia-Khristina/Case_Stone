@@ -166,6 +166,12 @@ function PainelConteudo({ abertura, onFechar, onMudou }) {
 
   async function responder(texto) {
     ouvir(texto);
+    // Pergunta não é pedido de ajuste nem objetivo de post: responde (sem gastar IA) e não reescreve nada.
+    if (ehPergunta(texto)) {
+      dizer(respostaPergunta(texto, peca) + (esperandoAjuste && peca
+        ? " Se quiser mudar algo na peça, é só escrever o quê (ex.: “o gancho tá fraco, cita o caixa de dezembro”)." : ""));
+      return;
+    }
     if (esperandoAjuste && peca) {
       setEsperandoAjuste(false);
       dizer("Reescrevendo. A versão atual fica guardada no histórico.");
@@ -435,6 +441,32 @@ function dataDe(texto) {
 }
 
 const segmentoDe = (t) => (SEGMENTO_POR_PALAVRA.find(([re]) => re.test(t)) || [])[1] || null;
+
+// Perguntas no chat: termina com "?" ou começa com palavra de pergunta. Não viram objetivo de post nem ajuste.
+const ehPergunta = (t) => /\?\s*$/.test(t.trim()) ||
+  /^\s*(por ?que|pq|porque|como|o que|qual|quais|quem|onde|quando|cad[eê]|pra que|para que)\b/i.test(t);
+
+function respostaPergunta(t, peca) {
+  const s = t.toLowerCase();
+  if (/\bcor(es)?\b|visual|paleta|design|fonte|layout|identidade/.test(s))
+    return "As cores não são escolha da IA. O carrossel usa a identidade visual do Impulso Stone (verde Sherwood e lima, fonte Hanken Grotesk), "
+      + "definida no arquivo de identidade (config/tokens_visuais.yaml) e conferida no contraste para leitura. A IA escreve só o texto; "
+      + (peca?.atual?.conta === "stone" ? "nas peças da @stone, a assinatura muda para stone. " : "")
+      + "Para mudar as cores, a equipe altera esse arquivo, não a peça.";
+  if (/nota|avalia|juiz|crit[eé]rio|6,|7,|8,|9,/.test(s))
+    return "A nota vem de um avaliador independente, um modelo de outra empresa, numa rubrica de 7 critérios (segue o que engaja, próximo passo claro, "
+      + "tom, clareza, fidelidade à oferta, concretude e profundidade). A nota de cada critério está no painel. Se algum fica abaixo de 7, "
+      + "o agente já tenta uma reescrita guiada pelo retorno do avaliador.";
+  if (/refer[eê]ncia|base|post real|exemplo|de onde/.test(s))
+    return "A peça se apoia em posts reais do top da base: os que mais superaram a média do próprio perfil, dentro do escopo (orientam o empreendedor). "
+      + "Eles aparecem no painel com link; o texto nunca é copiado deles.";
+  if (/formato|carrossel|reels|stories|short/.test(s))
+    return "O formato vem do que mais engaja na base para esse tema e da agenda da semana, que varia os formatos. Dá para trocar na proposta, antes de a IA escrever.";
+  if (/dia|data|hor[aá]rio|quando/.test(s))
+    return "O dia vem da agenda: datas comemorativas com fases de preparação, obrigações como o DAS, novidades do radar e orientações nos dias livres. "
+      + "O horário é de referência, de pesquisas públicas. O motivo de cada dia está em “Por que este post neste dia”.";
+  return "Aqui eu cuido de criar e revisar posts. Para entender o que engaja, veja Insights; para parceiros, Criadores.";
+}
 const formatoDe = (t) => (FORMATO_POR_PALAVRA.find(([re]) => re.test(t)) || [])[1] || null;
 const resumoPadrao = (p) => `${p.leitura === "mais no top" ? "usar" : "evitar"} ${rotuloPadrao(p)}`;
 

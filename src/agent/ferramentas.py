@@ -5,6 +5,8 @@ O LLM nunca calcula nada: ele recebe o que estas funções devolvem e só redige
 """
 from __future__ import annotations
 
+import os
+
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
@@ -199,7 +201,7 @@ def load_stone_context(caminho: Path = ROOT / "config" / "stone_context.yaml",
     """
     contexto = yaml.safe_load(caminho.read_text(encoding="utf-8")) or {}
     interno = interno or caminho.with_name("stone_interno.yaml")
-    if interno.exists():
+    if interno.exists() and os.getenv("BOAPAUTA_SEM_INTERNO") != "1":   # 1 = material público, sem dados internos
         contexto.update(yaml.safe_load(interno.read_text(encoding="utf-8")) or {})
     return contexto
 

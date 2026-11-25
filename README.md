@@ -1,272 +1,202 @@
 # BoaPauta
 
-O que engaja o empreendedor vira post do Impulso Stone.
+*O que engaja o empreendedor vira post do Impulso Stone.*
 
-O BoaPauta analisa posts públicos de Instagram e YouTube que falam com micro e pequenos empreendedores (MPEs), descobre o que diferencia os posts que mais engajam e usa isso para:
+Projeto individual Stone × Inteli Academy, entregue em 24/11/2026.
 
-- propor e escrever posts curtos para o **@impulsostone** ou para a **@stone** (Reels, carrossel, Stories, Shorts), cada conta com a sua oferta, sempre citando os posts reais em que se apoiam;
-- montar uma agenda com datas comemorativas (calculadas para qualquer ano), orientações práticas, ferramentas da semana, rodízio de segmentos e horários de referência;
-- indicar criadores para parceria (2 transversais + 3 setoriais, com reservas), com nota explicada;
-- gerar o **Playbook de conteúdo para a Stone**: o que engaja, o que evitar, formatos recomendados, perfis em destaque, exemplos reais e os criativos aprovados prontos para produção;
-- gerar o **guia detalhado da semana**, um e-mail para o empreendedor que aprofunda o assunto das peças aprovadas.
+- **App no ar:** [case-stone.onrender.com](https://case-stone.onrender.com)
+- **Arquitetura e decisões em detalhe:** [docs/arquitetura.html](docs/arquitetura.html)
 
-Projeto individual Stone × Inteli Academy. Entrega: 24/11/2026.
+## Contexto
 
-Arquitetura e decisões em detalhe: [docs/arquitetura.html](docs/arquitetura.html).
+O Impulso Stone é o programa de educação, mentoria e comunidade da Stone para micro e pequenos empreendedores (MPEs). Para produzir conteúdo que de fato prenda esse público, a equipe precisa responder a uma pergunta que nenhuma ferramenta de redes sociais responde sozinha: **por que** alguns posts engajam muito mais do que outros? Saber quais posts foram bem é fácil. Separar o que é típico do sucesso do que é apenas comum no nicho dá mais trabalho.
 
-## Estado
+O BoaPauta parte dessa pergunta. Ele acompanha 55 criadores que falam com o empreendedor brasileiro no Instagram e no YouTube, coleta os posts públicos pelas APIs oficiais, compara os que mais engajaram com um grupo controle sorteado e transforma as diferenças estatisticamente consistentes em achados. Esses achados alimentam um agente que propõe e escreve peças para o **@impulsostone** e para a **@stone**, sempre citando os posts reais em que se apoia. Em volta do agente há uma agenda editorial, a indicação de criadores para parceria, o *Playbook de conteúdo* para a Stone e um e-mail semanal ao empreendedor. Nada é publicado sem aprovação humana.
 
-Tudo abaixo roda com dados e modelos reais (nenhum dado simulado no app). Os testes automáticos usam um LLM falso só para não gastar cota.
+O projeto respeita a restrição do case: não há scraping nem nenhuma rota que viole os Termos de Uso das plataformas. Por isso o Instagram é lido pela Graph API (Business Discovery) e o YouTube pela Data API v3.
 
-| Parte | Estado |
-|---|---|
-| Descoberta de perfis (busca no YouTube → @ do Instagram na descrição, API oficial) | Pronta. 56 perfis aprovados em revisão humana; recusas registradas em `config/perfis_recusados.csv` |
-| Coleta: Instagram (Graph API, Business Discovery) e YouTube (Data API v3) | Rodada em 22/11/2026: 4.043 posts de 55 perfis, com limitador de chamadas e retomada |
-| Camada 0: métricas, top 10% por plataforma e faixa (e por formato no YouTube), grupo controle | Pronta: 3.352 posts elegíveis, 740 dentro do escopo, 68 top e 67 controle (janela de 6 meses) |
-| Filtro de escopo (orienta o empreendedor, 150+ curtidas, sem tema sensível) | Pronto em 24/11/2026: termos sensíveis + classificador de IA + tema da camada 1 + piso de curtidas |
-| Camada 1: rótulos de texto (Groq) | Pronta: 135 de 135 posts do top e do controle |
-| Camada 2: vídeo, imagem e áudio (Gemini) | Versão 3 (24/11/2026), com música, volume, tom e ritmo da fala, qualidade do áudio e efeitos: 126 de 135 posts. Ficaram fora 9 Reels com música licenciada (a API não entrega o arquivo). Links do Instagram renovados antes da análise (`scripts/renovar_midia.py`) |
-| Padrões top × controle (lift, intervalo de 90%, mínimo de 3 perfis) | Pronta |
-| Agente (LangGraph): proposta sem LLM, geração a partir de um caso concreto, 8 conferências, reescrita, juiz e reescrita guiada pelo juiz, para as duas contas | Pronto e testado ao vivo |
-| Servidor MCP (`run_agent`, `padroes`, `posts_de_referencia`, `pecas_aprovadas`) | Pronto e testado pelo protocolo MCP |
-| Scorecard de criadores e indicação | Pronta |
-| Agenda | Pronta |
-| App React (Planejamento, Peças, Insights, Criadores) + API FastAPI | Pronto e testado ponta a ponta no navegador |
-| Playbook de conteúdo para a Stone (HTML, sem LLM) | Pronto (`scripts/gerar_playbook.py` ou botão em Insights); precisa de 5 peças aprovadas para fechar a seção de criativos |
-| Guia detalhado da semana (e-mail ao empreendedor) | Pronto e testado ao vivo (Groq), com reescrita quando a seção não passa nas conferências |
-| Camada 3: validação humana dos rótulos (kappa) | Planilha de 52 posts às cegas e página de preenchimento prontas; falta preencher |
-| Calibração do avaliador com notas humanas | Planilha das peças avaliadas e comparação prontas; falta preencher |
-| Testes | Unidade, integração (API e MCP pelo protocolo) e ponta a ponta no navegador (Playwright); CI no GitHub Actions |
+## Arquitetura
 
-## Como rodar
+O sistema tem quatro blocos: o **pipeline de dados**, que transforma posts públicos em achados; o **agente**, que transforma achados em peças; a **camada de serviço** (API, app e servidor MCP), por onde a equipe trabalha; e os **produtos derivados** (agenda, criadores, playbook e guia semanal).
 
-```bash
-python -m venv .venv && .venv\Scripts\activate      # Linux/macOS: . .venv/bin/activate
-pip install -r requirements.txt
-python -m playwright install chromium                # slides do carrossel em PNG
-cp .env.example .env                                 # preencha as chaves (o .env nunca vai para o git)
-python -m pytest                                     # testes sem rede e sem chave
+```mermaid
+flowchart LR
+    subgraph Dados
+        A[Descoberta de perfis<br/>YouTube → @ do Instagram] --> B[Coleta<br/>Graph API · YouTube API]
+        B --> C[Camada 0<br/>métricas, escopo,<br/>top × controle]
+        C --> D[Camada 1<br/>texto · Groq]
+        C --> E[Camada 2<br/>vídeo, imagem, áudio · Gemini]
+        D --> F[Padrões<br/>lift + bootstrap]
+        E --> F
+    end
+    F --> G[Agente LangGraph]
+    F --> H[Agenda · Criadores · Playbook]
+    G --> I[API FastAPI]
+    H --> I
+    I --> J[App React]
+    I --> K[Servidor MCP]
+    J --> L((Aprovação humana))
 ```
-
-Com Docker (API + app num container; os dados ficam na pasta `data/` da máquina, montada como volume):
-
-```bash
-docker compose up --build                            # http://localhost:8000
-```
-
-Dados internos da Stone (persona e CTR dos anúncios do Impulso) ficam em `config/stone_interno.yaml`, **fora do git**; o modelo vazio é `config/stone_interno.exemplo.yaml`. Sem o arquivo, tudo funciona, só sem esses dados. O banco do app (`data/app/`) e o playbook gerado (`docs/playbook_stone.html`, que traz o CTR interno) também ficam fora do git.
-
-### App
-
-```bash
-cd app && npm install && npm run build && cd ..     # uma vez (ou depois de mudar o front)
-python -m src.api                                    # http://localhost:8000
-```
-
-Eventos ao vivo: `POST /api/pecas/ao-vivo` e `POST /api/pecas/{id}/ajuste/ao-vivo` transmitem cada etapa do agente (`text/event-stream`: dados, escrevendo, rascunho, conferencias, avaliando, juiz, pronto ou erro).
-
-Fotos dos criadores: `python scripts/baixar_fotos.py` (APIs oficiais; ficam em `data/fotos/`, fora do git).
-
-**Acesso.** Em uso local, o app não pede senha. Para colocar num servidor, defina `BOAPAUTA_TOKEN` no `.env`: criar, ajustar e aprovar peças passam a exigir a senha (a equipe informa em Configurações); a leitura continua aberta. `BOAPAUTA_GERACOES_POR_MINUTO` (padrão 6) limita as gerações com modelo de linguagem para um clique repetido não esgotar a cota. O nome informado em Configurações vai para o histórico de cada peça ("Aprovada por …").
-
-Para desenvolver o front com recarga automática: `python -m src.api` num terminal e `cd app && npm run dev` em outro (http://localhost:5173, com proxy para a API). Documentação da API: http://localhost:8000/docs.
-
-O app é organizado pelo trabalho da equipe (menu à esquerda):
-
-- **Planejamento** (página inicial): o calendário de conteúdo ocupa a tela (mês = semana atual + 4 seguintes, ou semana), com as sugestões da agenda (datas comemorativas, rodízio de segmentos e horários de referência) e as peças já criadas. Tocar numa sugestão, num dia livre ("+ post") ou em "Novo post" abre o **painel lateral**, que desliza sobre o calendário desfocado. À esquerda do painel fica a conversa (guiada por regras, sem IA); à direita, o palco: sugestão → proposta (formato, padrões que engajam e posts reais de base, ainda sem IA) → IA ao vivo (o que veio da base, o caso, o rascunho, as conferências passando ou falhando, a reescrita, o avaliador e a prévia do carrossel) → peça pronta. Ali mesmo se aprova ou se pede ajuste em linguagem livre (gera nova versão e guarda a anterior). Datas como "05/12" na conversa marcam o post na agenda. O modelo só roda ao criar ou ajustar.
-- **Busca** (Planejamento e Peças): sem diferenciar acento e maiúscula, com sinônimos ("décimo terceiro" acha "13º", "imposto" acha o DAS, "promoção" acha liquidação e Black Friday). No Planejamento, um contador mostra quantos itens casam nas semanas da tela, e os resultados dos próximos 6 meses aparecem logo acima do calendário, com um clique para ir até eles.
-- **Peças** (`#/pecas`): a fila de trabalho em colunas (pra revisar, aprovadas, sem data ou com problema), com nota do avaliador em cada cartão. Cada cartão abre o mesmo painel lateral. No topo, o **Guia detalhado da semana** gera o e-mail de sexta para os empreendedores a partir das peças aprovadas.
-- **Insights** (`#/insights`): todos os achados em frase simples, com "Ver exemplos", e os formatos que estão engajando. No topo, o botão do **Playbook de conteúdo** abre ou baixa o documento para a Stone.
-- **Configurações**: nome (para a saudação e o histórico das peças), senha de acesso quando o servidor pede, dados da base e **desempenho do agente** (tempo por peça, conferências de primeira, nota média do avaliador e efeito da reescrita guiada por ele).
-- **Criadores**: indicados com reserva, composição ajustável, lista de contato, tabela com todos os perfis e página de cada um explicando a nota.
-
-Os endereços antigos (`#/agenda`, `#/achados`, `#/inicio`) redirecionam para as páginas novas.
 
 ### Pipeline de dados
 
-```bash
-python scripts/descobrir_perfis.py --fonte youtube   # sugere perfis; nunca sobrescreve config/perfis.csv
-python scripts/aprovar_perfis.py                     # leva os aprovados para config/perfis.csv
-python scripts/coletar.py --esperar                  # coleta (retoma de onde parou se bater o limite da Meta)
-python scripts/calcular_metricas.py                  # camada 0 (coleta mais recente; --jsonl data/raw/<data> para outra)
-python scripts/camada1.py --coleta data/raw/<data>   # rótulos de texto
-python scripts/camada2.py --coleta data/raw/<data>   # rótulos de vídeo e imagem (--amostra para testar)
-python scripts/preparar_validacao.py && python scripts/validar_rotulos.py   # camada 3 (kappa)
-```
+A base começa pela **descoberta de perfis**. A Graph API remove as menções (@) das legendas de terceiros, então a busca é feita no YouTube, cujas descrições costumam trazer o @ do Instagram do criador. Os candidatos passam por filtros de atividade e tamanho e por uma revisão humana: 56 perfis foram aprovados e as recusas ficam registradas com o motivo.
 
-**Atualização semanal.** `python scripts/atualizar_base.py` roda tudo na ordem (coleta, métricas, capas, camadas 1 e 2 só nos posts novos, contas da Stone, playbook) e registra cada etapa em `data/processed/atualizacao.log`; uma etapa que falha (cota do Gemini, por exemplo) não impede as seguintes. `python scripts/atualizar_base.py --agendar` registra a tarefa no Agendador do Windows (segunda às 6h, ou assim que o computador ligar). O app recarrega a base sozinho quando a coleta ou as análises mudam, sem reiniciar o servidor.
+A **coleta** traz cerca de seis meses de posts de cada perfil, com um limitador que respeita o teto de chamadas da Meta e retoma de onde parou. A rodada de 22/11/2026 reuniu 4.043 posts de 55 perfis. Os dados brutos ficam em JSONL, versionados pela data da coleta.
 
-Os dados ficam em JSONL e CSV (`data/`) e o estado do app em SQLite. A camada PostgreSQL herdada do Case Suno não era usada e foi arquivada fora do repositório.
+A **camada 0** é puramente determinística (pandas, sem modelo de linguagem). Ela calcula as métricas de cada post, decide quais são elegíveis, aplica o filtro de escopo e separa o top e o grupo controle (detalhes na seção de análises). Nenhum post é apagado: quem fica de fora recebe a marcação e o motivo.
 
-**Validação humana** (camada 3 e calibração do avaliador):
+A **camada 1** usa um modelo de linguagem no Groq para rotular o texto de cada post do top e do controle: tema, tipo de gancho, chamada para ação, tom, convite a participar, presença de frase motivacional genérica e se é publicidade. A **camada 2** usa o Gemini para ler vídeo, imagem e áudio: quem aparece, se há rosto e fala nos três primeiros segundos, texto na tela, cenário, nível de produção, chamada final, música de fundo e volume, tom e ritmo da fala e qualidade do áudio. Todo vídeo segue o mesmo protocolo, seja Short, Reels ou vídeo longo: capa, os cinco primeiros segundos, cinco segundos do meio e os cinco finais (vídeos com menos de 15 s vão inteiros). Isso deixa a comparação justa entre formatos e reduz de três a cinco vezes o custo por post. Como o plano gratuito limita pedidos por dia, e não tokens, vários posts vão no mesmo pedido, cada um identificado.
 
-```bash
-python scripts/calibrar_juiz.py preparar             # planilha com as peças que o avaliador já pontuou
-python scripts/pagina_validacao.py                   # data/validacao/validacao.html: formulário no navegador
-python scripts/validar_rotulos.py                    # kappa por campo, rótulos da IA × pessoa
-python scripts/calibrar_juiz.py comparar             # erro médio, Spearman e viés do avaliador por critério
-```
+Por fim, o módulo de **padrões** compara cada característica rotulada entre o top e o controle e decide o que vira achado, o que é inconclusivo e o que está concentrado em poucos perfis.
 
-A página salva o progresso no navegador e baixa as planilhas preenchidas (salve por cima das de `data/validacao/`). Na calibração, a pessoa dá a nota sem ver a do avaliador; um viés positivo grande indica avaliador generoso demais (até agora ele deu 10 em quase tudo), e aí se ajustam as âncoras da rubrica ou `juiz_media_minima`.
+### Agente
 
-**Medir o retorno do avaliador:** `python scripts/medir_juiz.py --rodar 8` gera 8 peças reais e resume quantas precisaram de reescrita guiada pelo avaliador e quanto a nota mudou.
+O agente é um grafo em **LangGraph** com uma regra de economia: a proposta (formato, padrões que sustentam a ideia e posts reais de base) sai apenas da base de dados, sem modelo de linguagem. O modelo só roda quando a equipe dá o "ok", então nenhum token é gasto em ideia descartada.
 
-### Contas da Stone e Playbook de conteúdo
+Na geração, o modelo (`gpt-oss-120b`, no Groq) parte de um **caso concreto**, ou seja, um pequeno negócio, a dor específica e o que acontece se nada mudar, e lê o conteúdo completo dos posts de referência, incluindo o que se vê e as primeiras falas extraídas pela camada 2. Cada conta tem a sua oferta: o Impulso fala de educação, mentoria e comunidade; a Stone fala de maquininha, conta, link de pagamento e crédito, sem citar taxas nem condições.
 
-```bash
-python scripts/contas_stone.py coletar               # @stone e @impulsostone pela Graph API (config/contas_stone.csv)
-python scripts/contas_stone.py texto                 # camada 1 nos posts das contas
-python scripts/contas_stone.py visual                # camada 2 (para sozinha quando a cota do Gemini acaba)
-python scripts/contas_stone.py insights              # alcance, salvamentos e compartilhamentos (precisa de acesso)
-```
+O rascunho passa por oito **conferências determinísticas** no código: referências reais, caso concreto, chamada clara, ausência de promessa, fidelidade à oferta da conta, ausência de contas e fórmulas, clareza (Flesch adaptado ao português) e tamanho. Se alguma falha, o agente reescreve até duas vezes. Depois, um **juiz** de outra família de modelo (`qwen3.8-27b`) avalia a peça numa rubrica de sete critérios, entre eles a *profundidade*: um conselho óbvio sem o "como fazer" recebe no máximo 4. Se o juiz reprova ou dá menos de 7 em algum critério, o agente reescreve uma vez com o retorno dele (critério, nota, justificativa e trecho). A nova versão só é aceita se subir a média sem criar um critério fraco novo. Cada execução, com o antes e o depois, fica registrada para auditoria.
 
-**Insights das contas da Stone.** Alcance, salvamentos e compartilhamentos só vêm com o token de quem administra cada conta (permissão `instagram_manage_insights`). Com `STONE_IG_TOKEN_STONE` e `STONE_IG_TOKEN_IMPULSOSTONE` no `.env`, a etapa `insights` coleta esses números e as métricas ganham o engajamento sobre o alcance (`er_alcance`). Sem os tokens, a análise segue com curtidas e comentários.
+### Serviço e interface
 
-As contas da Stone ficam **fora** da base de referência (`data/contas_stone/` e `data/processed/contas_stone/`): se entrassem em `config/perfis.csv`, mudariam o top e o grupo de comparação dos 55 perfis. Elas passam pelas mesmas métricas e prompts e são comparadas com o nicho ([src/analysis/contas_stone.py](src/analysis/contas_stone.py)): engajamento contra perfis da mesma faixa, mistura de formatos, lacunas em relação aos achados do nicho e o que rende acima ou abaixo da mediana da própria conta (grupos com 4 posts ou mais). Coleta de 23/11/2026: @stone (711 mil seguidores, 55 posts elegíveis) e @impulsostone (4,4 mil, 37 posts); vídeo analisado em 46 dos 92 posts (o Instagram não entregou o arquivo de parte dos Reels).
+A **API FastAPI** é a única porta de entrada para a base e para o agente. Ela transmite cada etapa da geração ao vivo (*server-sent events*), guarda o estado das peças, versões, decisões e guias em **SQLite** e protege com senha opcional as ações que gastam cota ou alteram dados.
 
-#### Gerar o Playbook
+O **app em React** é organizado pelo trabalho da equipe. O *Planejamento* traz o calendário com as sugestões da agenda e um painel lateral em que a conversa guiada leva da sugestão à proposta, da proposta à geração ao vivo e daí à peça pronta, que pode ser aprovada ou ajustada em linguagem livre. As *Peças* formam a fila de revisão. Os *Insights* mostram os achados em frases simples com exemplos. Os *Criadores* trazem as indicações e a explicação de cada nota, e as *Configurações* reúnem o desempenho do agente.
 
-```bash
-python scripts/gerar_playbook.py                     # → docs/playbook_stone.html (abre offline, imprime em PDF)
-```
+O **servidor MCP** expõe a mesma lógica para assistentes de IA (`run_agent`, `padroes`, `posts_de_referencia` e `pecas_aprovadas`). Assim, um assistente conectado também ao Canva consegue montar os carrosséis aprovados direto na ferramenta de design da equipe.
 
-Painel em abas (**@impulsostone**, **@stone** e **Nicho**; os criativos aparecem na aba da conta para a qual foram escritos), um HTML único que abre offline, com capas e slides embutidos. Cada aba mostra os números da conta contra o nicho, os 3 movimentos principais (com barras "na conta × no top do nicho", régua de quanto rende na própria conta e capas dos posts de referência), formatos, os posts da conta que mais renderam e, no Impulso, os criativos aprovados em formato de celular; o resto fica recolhido. Conteúdo: resumo por conta, diagnóstico e recomendações de cada uma (com a base de cada recomendação e posts de referência do nicho), como ler os números, o que engaja (com lift, intervalo de 90% e posts de exemplo), o que evitar (incluindo o histórico de anúncios do Impulso, fonte interna), formatos recomendados, perfis em destaque, exemplos reais, criativos aprovados prontos para produção (com os posts em que se apoiam e a nota do avaliador), horários de referência e limites da análise. Nenhum texto é escrito por modelo de linguagem: tudo sai da base, e os criativos são as peças aprovadas no app. Com o app no ar, `GET /api/playbook.html` gera a versão do momento.
+### Produtos derivados
 
-### Servidor MCP
+A **agenda** combina datas comemorativas calculadas por regra (dia fixo, dias depois da Páscoa, n-ésimo domingo, Black Friday), por isso não vence no fim do ano. Cada data tem tipo e fases no tempo: o Natal vai de preço e estoque à última hora, ao agradecimento e às trocas. Nos dias sem data entram orientações práticas, uma ferramenta gratuita da semana, o rodízio de segmentos e horários de referência de pesquisas públicas.
 
-```json
-{"mcpServers": {"boapauta": {"command": "python", "args": ["-m", "src.servidor_mcp"], "cwd": "<pasta do projeto>"}}}
-```
+O **radar de oportunidades** ([src/analysis/radar.py](src/analysis/radar.py)) traz para a agenda o que surge na semana. Ele lê fontes oficiais (Receita Federal, Banco Central e Agência Sebrae de Notícias), e um modelo de linguagem extrai o que interessa ao pequeno negócio: prazo, regra nova, oportunidade de venda, ferramenta ou alerta de golpe. Quatro travas no código vêm depois da IA: sem link e data de publicação da fonte, o item não entra; uma data só é aceita se estiver escrita no texto da fonte; alertas de crime sem relação com o pequeno negócio e qualquer menção a concorrentes da Stone ficam fora; e a novidade vale por 30 dias. As novidades entram em até dois dias sem data por semana, com selo próprio no calendário e o link da fonte visível. Quando não cabem num dia, aparecem no painel como "novidades da semana", com um botão que transforma a novidade num pedido de post. Cada sugestão da agenda também explica **por que aquele post naquele dia**: o momento (a data, a fase ou a novidade), o que a base mostra que engaja naquele formato e um post real do top sobre o mesmo assunto. Quando os posts do top recente começam a citar uma data, a agenda antecipa a preparação dela.
 
-Ferramentas: `run_agent` (o contrato do agente, com `conta` = impulsostone ou stone), `padroes`, `posts_de_referencia` e `pecas_aprovadas`.
+O **scorecard de criadores** indica dois perfis transversais e três setoriais para parceria, com reservas. O **Playbook de conteúdo** é um HTML único, que abre offline e é montado sem nenhum texto de modelo de linguagem: compara as contas da Stone com o nicho, lista o que engaja e o que evitar e traz os criativos aprovados prontos para produção. O **guia detalhado da semana** é um e-mail ao empreendedor que aprofunda o assunto das peças aprovadas e passa pelas mesmas conferências.
 
-#### Levar as peças para o Canva
+O Playbook gerado fica fora do repositório (traz dados internos da Stone). Abaixo, a versão pública, sem os dados internos (`BOAPAUTA_SEM_INTERNO=1 python scripts/gerar_playbook.py`), uma imagem por aba:
 
-`pecas_aprovadas` entrega cada peça aprovada pronta para produção: título, caso, uma parte por slide ou cena (com o texto de tela), legenda, chamada, nota do avaliador, quem aprovou e, nos carrosséis, os PNGs já no visual da marca.
-
-1. Num assistente de IA que aceite vários servidores MCP (por exemplo, o Claude no computador), conecte o servidor do BoaPauta (configuração acima) e o conector oficial do Canva.
-2. Peça: "Pegue as peças aprovadas do @impulsostone no BoaPauta e monte cada carrossel no Canva, um slide por parte".
-3. O assistente lê as peças pelo BoaPauta e cria os designs pelo conector do Canva; a equipe revisa no Canva antes de publicar.
-
-O BoaPauta não guarda credencial do Canva: a conexão é do assistente, com a conta de quem usa.
-
-### Configurar a Graph API
-
-1. Converta uma conta do Instagram para profissional e vincule a uma página do Facebook.
-2. Em developers.facebook.com, crie um app do tipo Business com o produto Instagram (login do Facebook).
-3. Gere um token com `instagram_basic`, `pages_show_list`, `pages_read_engagement`, `business_management` e `instagram_manage_insights` (sem as duas últimas, o Business Discovery devolve o erro `#10`).
-4. Estenda o token no Depurador de token (cerca de 60 dias; o do Explorer dura 1 hora).
-5. Pegue o ID em `GET /me/accounts` → página → `instagram_business_account` e preencha `META_ACCESS_TOKEN` e `META_IG_USER_ID`.
-6. Em modo de desenvolvimento, o limite é de cerca de 200 chamadas por hora; o coletor para sozinho e retoma depois.
-
-## Como funciona
-
-1. **Coleta**: 90 dias de posts de cada perfil aprovado, pelas APIs oficiais.
-2. **Camada 0**: taxa de engajamento = (curtidas + comentários) ÷ seguidores; lift = quanto o post superou a média do próprio perfil. O top é o 10% de cada plataforma e faixa de seguidores (no máximo 5 posts por perfil); o grupo controle tem o mesmo tamanho e é sorteado com semente fixa.
-3. **Camada 1** (Groq): tema, gancho, chamada para ação, tom, convite a participar, frase genérica, publi.
-4. **Camada 2** (Gemini): quem aparece, rosto e fala nos 3 primeiros segundos, texto na tela, cenário, produção, chamada final, tom de voz. Protocolo único para qualquer vídeo (Short, Reels, vídeo longo): capa + início (0–5 s) + 5 s do meio + últimos 5 s; vídeo com menos de 15 s vai inteiro. Vários posts vão no mesmo pedido, cada um identificado, porque o plano gratuito limita pedidos por dia (20), não tokens.
-5. **Padrões**: cada característica é comparada entre top e controle. Só vira achado com lift acima de 1,1 (ou abaixo de 0,9), intervalo de confiança coerente e presença em pelo menos 3 perfis; o resto aparece como "inconclusivo" ou "concentrado em poucos perfis".
-6. **Agente**: a proposta usa só a base. A geração (Groq, `gpt-oss-120b`) parte de um **caso concreto** (um pequeno negócio, a dor específica, o que acontece se nada mudar) e lê o conteúdo completo dos posts de referência (legenda, o que se vê e as primeiras falas da camada 2). Para o @impulsostone, escreve com a oferta do programa (educação, mentoria, comunidade); para a @stone, com a oferta da marca (maquininha, conta, link de pagamento e crédito mediante análise, sem citar taxa nem condição). Passa por 8 conferências determinísticas (referências reais, caso concreto, chamada clara, sem promessa, fiel à oferta da conta, sem contas nem fórmulas, clareza, tamanho), até 2 reescritas e um juiz de outra família de modelo (`qwen3.8-27b`) com rubrica de 7 critérios, incluindo **profundidade**: conselho óbvio sem o como fazer tira no máximo 4. Tudo fica registrado em `data/processed/agent_runs.jsonl`.
-7. **Retorno do juiz** ([src/agent/melhoria.py](src/agent/melhoria.py)): se o juiz reprova ou dá menos de 7 em algum critério, o agente reescreve uma vez com o retorno dele (critério, nota, justificativa e trecho), o juiz avalia de novo e fica a versão melhor. A reescrita só é aceita se subir a média sem criar um critério fraco novo; se a cota do modelo acabar no meio, fica a original. Antes e depois ficam em `agent_runs.jsonl`; `python scripts/medir_juiz.py` resume quanto o retorno do juiz melhorou os criativos.
-8. **Revisão humana**: nada é publicado sem "Aprovar"; cada ajuste guarda a versão anterior e o motivo.
-
-## Limpeza de escopo (24/11/2026)
-
-A validação humana encontrou no top posts fora da proposta do TAPI: receitas, política, entretenimento e posts com poucas dezenas de curtidas (27% do top fora do tema; 43% com menos de 100 curtidas). O ranking passou a considerar só posts **dentro do escopo** ([src/analysis/escopo.py](src/analysis/escopo.py), [scripts/escopo.py](scripts/escopo.py)):
-
-1. **Termos sensíveis** (código): política, raça, gênero, religião e polêmica não entram.
-2. **Classificador de IA**: "o post orienta o micro empreendedor?" (sim, parcial, não) e "trata de tema sensível?".
-3. **Tema** da camada 1: receita ou técnica do ofício e "outro" ficam fora.
-4. **Piso de 150 curtidas**, perto da média por post da @stone; abaixo disso o post não concorre (nem ao top nem ao controle, para a comparação continuar justa).
-
-Os posts fora do escopo continuam nas médias do nicho (a comparação das contas da Stone não muda); só não concorrem ao ranking. Para manter amostra com o piso, a janela do ranking passou de 90 dias para os 6 meses coletados; as referências do agente dão peso à recência (meia-vida de 45 dias). O controle passou a ser um sorteio estável por post (semente + id), para que tirar um post não embaralhe os demais.
-
-| | Antes | Depois |
+| @impulsostone | @stone | Nicho |
 |---|---|---|
-| Posts no top | 165 | 68 (19 perfis) |
-| Mediana de curtidas no top | 214 | 3.300 |
+| <a href="docs/img/playbook_impulsostone.jpg"><img src="docs/img/playbook_impulsostone.jpg" width="260" alt="Playbook, aba @impulsostone"></a> | <a href="docs/img/playbook_stone.jpg"><img src="docs/img/playbook_stone.jpg" width="260" alt="Playbook, aba @stone"></a> | <a href="docs/img/playbook_nicho.jpg"><img src="docs/img/playbook_nicho.jpg" width="260" alt="Playbook, aba Nicho"></a> |
+
+Uma tarefa semanal (`scripts/atualizar_base.py`) refaz todo o pipeline nos posts novos, e o app recarrega a base sozinho, sem reiniciar.
+
+## Tecnologias
+
+| Camada | Tecnologias |
+|---|---|
+| Coleta | Instagram Graph API (Business Discovery), YouTube Data API v3 |
+| Análise | Python, pandas, NumPy, scikit-learn (kappa de Cohen) |
+| Modelos de linguagem | Groq (`gpt-oss-120b` para rotular e gerar, `qwen3.8-27b` como juiz), Google Gemini via `google-genai` (vídeo, imagem e áudio) |
+| Agente | LangGraph, cliente de LLM com cache, controle de cota e repetição (herdado do Case Suno) |
+| Serviço | FastAPI, Uvicorn, Pydantic, FastMCP, SQLite |
+| Interface | React 18, Vite |
+| Renderização | Playwright (slides do carrossel em PNG no visual Impulso), Pillow |
+| Dados e configuração | JSONL, CSV, YAML (limiares, datas, orientações, rubrica) |
+| Qualidade e entrega | pytest (unidade, integração da API e do MCP, ponta a ponta com Playwright), GitHub Actions, Docker |
+
+Nenhum limiar fica escrito no código: todos estão em [config/limiares.yaml](config/limiares.yaml), cada um marcado como definido pelo case ou provisório, e o código falha se uma chave obrigatória faltar.
+
+## Como rodar
+
+Localmente, com Python 3.11+ e Node 20:
+
+```bash
+pip install -r requirements.txt && python -m playwright install chromium
+cp .env.example .env                      # chaves do Groq, Gemini, Meta e YouTube (o .env não vai para o git)
+cd app && npm install && npm run build && cd ..
+python -m src.api                         # http://localhost:8000
+```
+
+Com Docker, `docker compose up --build` sobe a API e o app num container só, lendo a pasta `data/` da máquina.
+
+### Deploy (Render)
+
+Os dados coletados ficam fora do repositório, então o servidor recebe a base por um pacote:
+
+1. `python scripts/pacote_dados.py` gera `dist/boapauta_dados.zip` (cerca de 15 MB: coleta, base processada, rótulos, radar, contas da Stone, capas reduzidas e o banco com as peças; sem os dados internos da Stone).
+2. Suba o zip num link público, por exemplo como anexo de uma Release do GitHub.
+3. No Render, crie um Web Service do tipo **Docker** apontando para o repositório e defina em *Environment*: `BOAPAUTA_DADOS_URL` (o link do zip), `GROQ_API_KEY`, `GEMINI_API_KEY` e as demais chaves do `.env.example`. Para um servidor público, defina também `BOAPAUTA_TOKEN`.
+4. Ao iniciar, o container baixa e extrai o pacote (só dentro de `data/`) e sobe a API na porta que o Render define. Sem a base, o app mostra um aviso em vez de ficar carregando.
+
+No plano gratuito o disco é apagado a cada reinício: peças criadas no servidor somem, e as que estão no pacote voltam.
+
+## Análises estatísticas e métricas
+
+### Métricas de engajamento
+
+A métrica principal é a **taxa de engajamento** definida no case: (curtidas + comentários) ÷ seguidores. Como ela cai naturalmente quando a conta cresce, o projeto usa também o **lift no perfil**: a taxa do post dividida pela mediana da taxa dos posts elegíveis do mesmo perfil. Esse lift isola o efeito do conteúdo do efeito do tamanho da conta. A relação **comentários ÷ curtidas** é usada como sinal de conversa, já que a Graph API não entrega o texto dos comentários de terceiros.
+
+Só entram no ranking posts com pelo menos 14 dias, quando as métricas já se estabilizaram.
+
+### Top e grupo controle
+
+O top reúne os **10% superiores**, calculados separadamente por plataforma e por faixa de seguidores (micro até 10 mil, médio até 100 mil, grande acima). No YouTube o cálculo é feito também dentro de cada formato, porque Shorts e vídeos longos têm dinâmicas de curtida diferentes. Cada perfil contribui com no máximo cinco posts, para que uma conta viral não domine a amostra.
+
+O **grupo controle** tem o mesmo tamanho e é sorteado entre os elegíveis fora do top, na mesma plataforma e faixa. O sorteio é estável por post (semente fixa + id do post), de modo que remover um post não embaralha os demais. Sem o controle, um "padrão do top" poderia ser apenas um padrão do nicho.
+
+### Filtro de escopo
+
+A primeira validação humana mostrou que 27% do top estava fora do tema do case (receitas, entretenimento, política) e que 43% tinha menos de 100 curtidas. O ranking passou então a considerar apenas posts dentro do escopo, com quatro filtros em sequência: termos sensíveis no código (política, raça, gênero, religião, polêmica), um classificador de IA que pergunta se o post **ensina gestão** ao micro empreendedor (só o "sim" entra; venda do próprio curso ou produto, receita e tutorial do ofício ficam fora mesmo quando falam de vender ou de renda extra), o tema da camada 1 (receita, técnica do ofício e "outro" ficam fora) e um piso de 150 curtidas, próximo da média por post da @stone. Os posts fora do escopo continuam nas médias do nicho, mas não concorrem ao top nem ao controle. Para manter a amostra com o piso, a janela do ranking passou de 90 dias para os seis meses coletados, e as referências do agente dão peso à recência (meia-vida de 45 dias).
+
+| | Antes do filtro | Depois do filtro |
+|---|---|---|
+| Posts no top | 165 | 51 (13 perfis) |
+| Mediana de curtidas no top | 214 | 1.780 |
 | Top com menos de 100 curtidas | 71 | 0 |
-| Top fora do tema (receita, "outro") | 45 | 0 |
+| Top fora do tema | 45 | 0 |
 
-Ficaram fora do escopo 2.612 posts elegíveis: 2.260 por poucas curtidas, 98 de receita ou técnica, 97 de tema "outro", 97 com tema sensível e 60 que não orientam o empreendedor. `python scripts/relatorio_escopo.py` refaz o antes × depois.
+Dos 3.355 posts elegíveis, 591 ficaram dentro do escopo, dos quais saíram 51 posts no top e 51 no controle. Dos 2.762 excluídos, 2.261 saíram por poucas curtidas, 127 por serem receita ou técnica, 126 pelo tema "outro", 95 por tema sensível, 82 por orientarem só em parte e 73 por não orientarem o empreendedor. A camada 1 rotulou os 102 posts do top e do controle, e a camada 2 analisou 101; o restante é um Reels com música licenciada, cujo arquivo a API não entrega. O rigor tem custo: a amostra ficou menor e sobraram seis achados fortes, contra quinze com o classificador anterior, mais permissivo.
 
-## Achados principais (base limpa, 24/11/2026)
+### Comparação top × controle
+
+Para cada valor de cada característica, o módulo de padrões ([src/analysis/padroes.py](src/analysis/padroes.py)) calcula a proporção no top, a proporção no controle e o **lift** (proporção no top ÷ proporção no controle). Como as amostras têm dezenas de posts, um lift de 1,8× pode ser puro acaso, então cada lift ganha um **intervalo de confiança de 90% por bootstrap**: top e controle são reamostrados com reposição mil vezes, com proporções suavizadas (+0,5 caso, +1 total) para evitar limites infinitos quando o valor não aparece no controle.
+
+Uma característica só vira achado quando cumpre três condições: lift acima de 1,1 (ou abaixo de 0,9), intervalo inteiro do mesmo lado de 1 e presença no top em **pelo menos três perfis diferentes**. A última condição impede que o hábito de um único criador, como um link de afiliado que ele sempre usa, seja confundido com o que engaja. Valores com menos de três posts no top são descartados, e o restante aparece como "inconclusivo" ou "concentrado em poucos perfis".
+
+### Confiabilidade dos rótulos
+
+Como os rótulos vêm de modelos de linguagem, o projeto mede a concordância com o **kappa de Cohen** e considera pouco confiável qualquer campo abaixo de 0,4. Para testar se o protocolo em lote, com vários posts por pedido e vídeo por trechos, mistura informações, 20 posts foram analisados também um a um com o vídeo inteiro. Os campos objetivos concordaram de 85% a 100% (kappa de 0,56 a 1,00). Produção (0,35), tom de voz (0,23) e "mostra ferramenta" (0,00, classe rara) mudam conforme o modelo vê o vídeo inteiro ou trechos e por isso continuam gravados, mas ficam fora dos achados. A validação humana, com 52 posts rotulados às cegas, segue o mesmo cálculo.
+
+### Qualidade dos criativos
+
+As peças são medidas em três frentes. A clareza usa o **índice de Flesch adaptado ao português** (Martins et al., 1996), com mínimo de 55 para os posts e 50 para o e-mail explicativo. A rubrica do juiz exige média de pelo menos 7 e nenhum critério abaixo de 5. A calibração do juiz compara as notas dele com notas humanas dadas às cegas, usando erro médio, **correlação de Spearman** e viés por critério. O app acompanha ainda o tempo por peça, a taxa de conferências aprovadas de primeira, a nota média do avaliador e o ganho trazido pela reescrita guiada por ele.
+
+### Scorecard de criadores
+
+A nota de cada criador, de 0 a 100, é a média ponderada de cinco dimensões, todas convertidas em **percentil dentro da mesma plataforma e faixa**:
+
+- consistência (25): fração dos posts acima da mediana da faixa;
+- conversa (20): mediana de comentários ÷ curtidas;
+- autenticidade (20): fração de posts com o dono, um cliente ou o negócio real, vista pela camada 2;
+- marca (20): fração de posts com tema acionável e sem frase motivacional genérica;
+- frequência (15): posts nos últimos 90 dias.
+
+### Principais achados
 
 | Plataforma | Achado | Lift | Perfis |
 |---|---|---|---|
-| Instagram | Música de fundo, baixa, por baixo da fala | 7,0× (volume baixo: 6,0×) | 4 |
-| Instagram | Fala em tom calmo e acolhedor | 7,0× | 4 |
-| Instagram | Gravado no negócio de verdade | 6,0× | 4 |
-| Instagram | Gancho de promessa | aparece menos no top | 6 |
-| YouTube | Tema finanças | 2,1× | 5 |
-| YouTube | Música baixa, por baixo da fala | 1,4× | 10 |
-| YouTube | Chamada pedindo para comentar | só no top (0% no controle) | 4 |
-| YouTube | Chamada para link | aparece menos no top | 7 |
+| Instagram | Sem chamada no final (o conteúdo fecha sozinho) | 2,0× | 5 |
+| Instagram | Fala sem nenhum som ambiente (o top tem mais som de loja, rua ou cozinha) | aparece menos no top | 3 |
+| Instagram | Especialista dando aula | aparece menos no top | 2 |
+| Instagram | Gancho de promessa | aparece menos no top | 2 |
+| YouTube | Tema finanças | 2,2× | 4 |
+| YouTube | Chamada para link | aparece menos no top | 5 |
 
-**Leitura com cautela**: os achados do Instagram vêm de 22 posts do top com vídeo, em 4 perfis: sinais fortes, mas com intervalo largo, a confirmar com mais coletas. Os do YouTube (até 10 perfis) são mais sólidos. Os campos de áudio são novos e ainda não passaram pela verificação de concordância feita com os campos visuais.
+Com o escopo rígido, o top tem 51 posts de 13 perfis, e os achados apontam numa direção coerente: o que engaja é conteúdo de finanças com cara de negócio real, sem promessa e sem empurrar o público para fora (link) nem pedir ação no fim. São sinais com intervalo largo, que precisam de mais coletas para se firmar; a recuração dos perfis (próximos passos) é o que aumenta a amostra útil. Há também uma tensão a discutir com a Stone: a frase motivacional genérica engaja no orgânico, mas o histórico de anúncios do Impulso mostra que ela não gera clique. Por isso o agente não a usa.
 
-**Tensão para discutir com a Stone**: a frase motivacional genérica engaja no orgânico, mas o histórico de anúncios da Stone mostra que ela não gera clique. O BoaPauta não a usa para gerar peças.
+## Conclusão e próximos passos
 
-## Decisões
+O BoaPauta mostra que dá para sair de "o que foi bem" para "o que diferencia o que foi bem" usando apenas dados públicos, obtidos pelas vias oficiais, e uma comparação estatística honesta com um grupo controle. A divisão de papéis é deliberada: **o código calcula, a IA rotula e escreve, e a pessoa aprova.** Os números dos achados nunca vêm de um modelo de linguagem, cada peça gerada cita os posts reais em que se apoia, e conferências determinísticas barram o que a instrução no prompt não basta para evitar, como uma fórmula de margem errada que o juiz automático havia aprovado com nota 10.
 
-| Decisão | Motivo |
-|---|---|
-| Instagram pela Graph API, sem scraping | O TAPI (4.3) exclui scraping e rotas que violam os Termos de Uso |
-| Descoberta pelo YouTube | A Graph API remove as menções (@) das legendas de terceiros; as descrições do YouTube trazem o @ do Instagram |
-| Proposta antes de gerar | O modelo de linguagem só roda com o "ok" da equipe: nenhum token gasto em ideia descartada |
-| Mesmo recorte de vídeo para todos os formatos | Comparação top × controle justa entre Short, Reels e vídeo longo; 3 a 5 vezes menos tokens por post |
-| Groq para texto, Gemini para vídeo | O cliente Groq do Case Suno já controla cota, cache e repetição; o Gemini lê vídeo e link do YouTube direto |
-| App em React + FastAPI | Poucas páginas com modais e subpáginas; a API é a mesma que o servidor MCP usa |
-| Estado do app em SQLite | Peças, versões, decisões e guias detalhados; vem com o Python e não exige servidor |
-| Janela de 6 meses no ranking, posts com 14+ dias | Com o filtro de escopo e o piso de curtidas, 90 dias deixavam o top pequeno demais; a recência pesa na escolha das referências. Meta: voltar a 4–8 semanas quando as coletas semanais acumularem |
-| Filtro de escopo antes do ranking | O top precisa ser referência para o micro empreendedor: sem receita, entretenimento, política, raça, gênero, religião ou polêmica, e com engajamento real (150+ curtidas) |
-| Top por plataforma e faixa | A taxa de engajamento cai quando os seguidores sobem; misturar faixas favoreceria só os pequenos |
-| Duas listas de criadores | A amostra de análise (variada, para aprender) é diferente dos indicados (saem da amostra depois da análise) |
-| Taxonomia em dois eixos | Tipo (transversal ensina qualquer MPE; setorial é dono de um tipo de negócio) e macrossetor de lista fechada |
-| Datas da agenda por tipo e fase | Cada data tem um tipo (venda no dia, temporada, obrigação, comunidade, feriado) e fases no tempo: o Natal vai de preço e estoque a última hora, agradecimento no dia e trocas depois; feriado ganha aviso de horário na véspera e não tem post de venda; DAS do MEI entra todo dia 20. As datas ativas revezam (antes, o 13º sumia atrás da Black Friday) e a mesma data não repete o texto (`config/datas_comemorativas.yaml`) |
-| Dias sem data: orientação e radar de ferramentas | Nos dias sem data, a agenda sugere uma orientação prática (fluxo de caixa, fiado, golpes do Pix…) e, uma vez por semana, uma ferramenta gratuita ou oficial que o empreendedor costuma não usar (WhatsApp Business, Perfil da Empresa no Google, emissor de NFS-e do MEI, Registrato…), com custo e site oficial para a equipe conferir; nada de concorrente da Stone (`config/orientacoes.yaml`) |
-| Datas por regra, não por ano | Cada data tem uma regra (dia fixo, dias depois da Páscoa, n-ésimo domingo, quinta de novembro + 1 para a Black Friday); a agenda não vence no fim do ano |
-| Uma oferta por conta | O agente escreve para o Impulso (programa) ou para a Stone (produtos); a rubrica e as conferências cobram a oferta certa de cada uma |
-| Senha opcional | Uso local sem atrito; publicado, as ações que gastam cota ou mudam dados pedem senha |
-| Horários como orientação | Vêm de pesquisas públicas (Opinion Box, Buffer, Sprout Social 2026), não de dados da Stone |
-| Guia detalhado sem e-mails guardados | A Stone envia pela própria ferramenta; o HTML traz `{{link_descadastro}}` e `{{link_impulso}}` para ela preencher |
+O projeto também deixa claros os seus limites. As amostras do Instagram ainda são pequenas, a camada 2 vê o vídeo por trechos e pode perder uma chamada no meio, os Reels com música licenciada ficam de fora, e o juiz automático deu nota alta a quase tudo, o que indica que ainda não discrimina bem. Os próximos passos atacam essas lacunas:
 
-## Base de código: o que veio do Case Suno
-
-| Módulo | Mudança |
-|---|---|
-| `src/shared/` (cliente de LLM, cache, limites) | Nenhuma além do nome |
-| `src/evaluation/judge.py` | Rubrica nova (`rubric_criativo.yaml`); avaliação tolerante a saída fora do formato |
-| `src/evaluation/flesch_ptbr.py` | Um alvo único de clareza (`clareza_ok`) |
-| `src/rendering/` | Visual Impulso, papéis capa / corpo / cta |
-| `src/persistence/` (PostgreSQL) | Arquivada: o projeto usa JSONL, CSV e SQLite |
-| `Dockerfile`, `docker-compose.yml` | Refeitos para a API FastAPI + app React (o Streamlit do Case Suno saiu) |
-
-Novo: `src/collection/` (coletores e descoberta), `src/analysis/` (métricas, camadas 1 e 2, padrões, scorecard, indicação, agenda), `src/agent/` (contrato, ferramentas, gerador, verificador, grafo, serviço), `src/playbook.py` (Playbook da Stone), `src/guia.py` (guia detalhado), `src/api.py`, `src/servidor_mcp.py`, `app/`.
-
-## Limitações conhecidas
-
-- **Camada 2 por trechos**: ver só capa, início, meio e fim deixa escapar uma chamada para ação no meio do vídeo e não permite medir o ritmo de cortes (campo retirado). A autenticidade do scorecard usa o vídeo nos perfis com 3 ou mais posts analisados e, nos outros, a aproximação pelo tipo de perfil.
-- **Reels com música licenciada**: a Graph API não entrega o vídeo deles (sem `media_url`). Ficaram fora da camada 2 23 Reels (17 do controle, 6 do top); a comparação visual do Instagram vale para Reels sem música licenciada, carrosséis e imagens.
-- **Clareza do guia detalhado**: o e-mail usa mínimo de 50 (início da faixa "fácil" da escala de Martins et al.), e os posts, 55. Texto explicativo tem palavras mais longas que uma legenda; a conferência aponta as palavras longas para a reescrita.
-- **Vários posts por pedido**: 20 posts foram analisados no protocolo em lote e também um a um (vídeo inteiro). Campos objetivos concordaram de 85% a 100% (kappa 0,56 a 1,00: rosto e fala nos 3 s, texto na tela, cenário, gancho, legenda na tela, chamada no final, quem aparece), sinal de que o lote não mistura posts. **Produção** (kappa 0,35), **tom de voz** (0,23) e **mostra ferramenta** (0,00, classe rara) mudam conforme o modelo vê o vídeo inteiro ou trechos e ficam fora dos achados (`config/limiares.yaml` → `camada2_campos_instaveis`).
-- **Vídeos que o Gemini não lê**: um vídeo público do YouTube devolveu 403 e derrubava o lote inteiro; achado por busca binária e listado em `config/camada2_inacessiveis.json`.
-- **Conteúdo raso nas primeiras versões**: as peças saíam corretas, mas óbvias ("separe as contas", "defina metas"). Causas: o gerador via só padrões e trechos curtos das referências, e o juiz não punia o óbvio. Correção: caso concreto obrigatório, conteúdo completo das referências, critério de profundidade e gerador no modelo maior.
-- **O avaliador automático não confere contas**: num teste, uma peça ensinou "multiplique por 1,2 para 20% de margem" (isso é markup; a margem fica em cerca de 17%) e recebeu nota 10. O gerador não ensina fórmulas nem contas, e uma conferência no código barra instruções como "custo + 30%" ou "multiplique por" (a regra só no prompt não bastou). A aprovação humana continua obrigatória.
-- **Cotas diárias**: o Groq gratuito tem 200 mil tokens por dia, e cada peça faz de 2 a 4 chamadas (geração, reescritas e juiz). Quando a cota acaba, o app avisa e diz quando tentar de novo.
-- **Curtidas ocultas** chegam vazias e o post sai do ranking (afeta poucos perfis, como @shirleycontadora).
-- **Comentários de terceiros**: a Graph API não traz o texto; o sinal de conversa usa comentários ÷ curtidas.
-- **Links de mídia do Instagram** expiram em poucos dias; a camada 2 precisa rodar logo depois da coleta (ou recoletar).
-- **Shorts** são aproximados por duração (até 180 s): o YouTube não informa se o vídeo é vertical.
-- **Validação humana** dos rótulos e **calibração do avaliador** ainda não foram feitas (planilhas e página prontas em `data/validacao/`). Sinal de alerta: o avaliador deu 10 em quase todos os critérios das peças, então a nota dele ainda não discrimina bem.
-- **Criativos para a @stone**: o agente não conhece taxas, prazos nem condições dos planos e foi proibido de citá-los; a equipe completa esses detalhes antes de publicar. O carrossel da @stone assina "stone", mas usa a paleta do Impulso.
-- **Atualização automática** depende do computador ligado (a tarefa roda assim que ele liga, se perdeu o horário) e gasta cota das APIs proporcional aos posts novos.
-- `documentos/` (material interno da Stone), `Case_Suno/`, `.env` e os dados brutos ficam fora do git.
-
-## Próximos passos
-
-1. **Interpretação dos achados por IA**: para cada achado (número calculado pelo código), a IA lê os posts do top com aquela característica e explica *por que* funcionam, com exemplos. Fica marcada como interpretação; o número continua vindo do código ("a IA lê e interpreta, o código calcula").
-2. **Leitura qualitativa do top**: síntese por tema do que os posts mais fortes têm em comum.
-3. **Recuração dos perfis**: tirar ou rebaixar os perfis com metade ou mais dos posts fora do escopo (receita, artesanato, entretenimento) e buscar perfis de educação para o MEI.
-4. **Janela mais curta**: o que atrai o público muda rápido; com a atualização semanal acumulando coletas, reduzir a janela do ranking de 180 dias para 4 a 8 semanas.
-5. **Concordância dos campos de áudio** (música, volume, tom e ritmo da fala), como foi feito com os campos visuais.
+1. **Fechar a validação humana**: preencher a planilha de 52 posts rotulados às cegas (kappa por campo) e calibrar o juiz com notas humanas, ajustando as âncoras da rubrica se o viés se confirmar.
+2. **Interpretação dos achados por IA**: para cada achado, a IA lê os posts do top que têm aquela característica e explica por que funcionam, com exemplos, marcada como interpretação. O número continua vindo do código.
+3. **Leitura qualitativa do top**: uma síntese por tema do que os posts mais fortes têm em comum.
+4. **Recuração dos perfis**: rebaixar ou retirar perfis com metade ou mais dos posts fora do escopo e buscar perfis de educação para o MEI, o que aumenta a amostra útil.
+5. **Janela mais curta**: o que atrai o público muda rápido. Com as coletas semanais acumulando, a ideia é reduzir a janela do ranking de seis meses para quatro a oito semanas.
+6. **Concordância dos campos de áudio**: medir música, volume, tom e ritmo da fala com o mesmo protocolo já aplicado aos campos visuais, antes de dar a esses achados o mesmo peso dos demais.
+7. **Métricas de alcance das contas da Stone**: com os tokens de administrador, passar a medir engajamento sobre alcance, salvamentos e compartilhamentos, e não só curtidas e comentários.
+8. **Mais fontes no radar**: os feeds oficiais trazem só as últimas notícias, então o radar acumula semana a semana. Os próximos passos são incluir o Portal do Empreendedor (ainda sem feed que funcione) e, com curadoria, portais de negócios e tecnologia para ferramentas novas.

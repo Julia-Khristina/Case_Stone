@@ -486,22 +486,20 @@ p.lead{font-size:26px;line-height:1.45;color:#C3D6C9;max-width:1150px}
 <script>
 /* ======== DADOS (atualize aqui; nada abaixo precisa mudar) ======== */
 const DADOS = {
-  candidatos: 600, perfis: 56, posts: 4043, elegiveis: 3352, analisados: 135, elegiveis2: 740, texto: 135, visual: 126,
-  testes: 139,
+  candidatos: 600, perfis: 56, posts: 4043, elegiveis: 3355, analisados: 102, elegiveis2: 591, texto: 102, visual: 101,
+  testes: 144,
   kappas: [ // campo, concordância, kappa, fica?
     ["Rosto nos 3 primeiros s", 1.00, 1.00, true], ["Fala nos 3 primeiros s", 1.00, 1.00, true],
     ["Texto na tela no início", 1.00, 1.00, true], ["Chamada no final", .90, .85, true],
     ["Fala escrita na tela", .90, .78, true], ["Cenário", .85, .77, true], ["Gancho visual", .85, .74, true],
     ["Quem aparece", .90, .56, true], ["Produção", .70, .35, false], ["Tom de voz", .55, .23, false]],
-  achados: [ // plataforma, lift (null = menos), frase, perfis · base depois da limpeza de escopo (24/11)
-    ["INSTAGRAM", "7,0×", "<b>Música de fundo</b>, baixa, por baixo da fala", 4],
-    ["INSTAGRAM", "7,0×", "Fala em tom <b>calmo e acolhedor</b>", 4],
-    ["INSTAGRAM", "6,0×", "Gravado no <b>negócio de verdade</b>", 4],
-    ["INSTAGRAM", null, "Gancho de <b>promessa</b> aparece menos no top", 6],
-    ["YOUTUBE", "2,1×", "Tema <b>finanças</b>: caixa, preço, dívidas", 5],
-    ["YOUTUBE", "1,4×", "Música <b>baixa, por baixo da fala</b>", 10],
-    ["YOUTUBE", "só no top", "Chamada pedindo para <b>comentar</b>", 4],
-    ["YOUTUBE", null, "Chamada <b>para link</b> aparece menos no top", 7]],
+  achados: [ // plataforma, lift (null = menos), frase, perfis · base com escopo rígido (só posts que ensinam gestão)
+    ["INSTAGRAM", "2,0×", "Termina <b>sem pedir nada</b>: o conteúdo fecha sozinho", 5],
+    ["INSTAGRAM", null, "Gancho de <b>promessa</b> aparece menos no top", 2],
+    ["INSTAGRAM", null, "Fala <b>sem nenhum som ambiente</b> aparece menos: o som do negócio real engaja", 3],
+    ["YOUTUBE", "2,2×", "Tema <b>finanças</b>: caixa, preço, dívidas", 4],
+    ["YOUTUBE", null, "Chamada <b>para link</b> aparece menos no top", 5],
+    ["INSTAGRAM", null, "<b>Especialista dando aula</b> aparece menos no top", 2]],
   carrossel: ["slide_01.png","slide_02.png","slide_03.png","slide_04.png","slide_05.png","slide_06.png"]
 };
 
@@ -524,13 +522,13 @@ const NOS = [
   d:"4.043 posts em data/raw/2026-11-22.", p:"Retomada sem perder nada quando bate o limite da Meta."},
  {id:"c0", x:270, y:230, t:"Camada 0 · métricas", s:"pandas",
   tec:"pandas · numpy", o:"Engajamento, lift sobre a média do perfil, faixas de seguidores, top 10% e grupo controle (semente fixa).",
-  d:"3.352 elegíveis; 740 dentro do escopo (orientam o empreendedor, 150+ curtidas, sem tema sensível); 68 top, 67 controle.", p:"Separar por plataforma e faixa: a taxa de engajamento cai quando os seguidores sobem."},
+  d:"3.355 elegíveis; 591 dentro do escopo (ensinam gestão ao empreendedor, 150+ curtidas, sem tema sensível); 51 top, 51 controle.", p:"Separar por plataforma e faixa: a taxa de engajamento cai quando os seguidores sobem."},
  {id:"c1", x:270, y:345, t:"Camada 1 · texto", s:"Groq · gpt-oss-20b",
   tec:"Groq · Pydantic · cliente do Case Suno", o:"Rótulos de tema, gancho, chamada, tom, frase genérica e publi, em lotes validados.",
-  d:"135 de 135 posts do top e do controle, mais o rótulo de escopo (orienta o empreendedor? tema sensível?).", p:"Cliente herdado com cache, limite de tokens por minuto e espera no 429."},
+  d:"102 de 102 posts do top e do controle, mais o rótulo de escopo (ensina gestão ao empreendedor? tema sensível?).", p:"Cliente herdado com cache, limite de tokens por minuto e espera no 429."},
  {id:"c2", x:270, y:460, t:"Camada 2 · vídeo", s:"Gemini 3.5 Flash",
   tec:"Gemini · Files API · YouTube por link", o:"Capa + início (0–5 s) + 5 s do meio + últimos 5 s de cada vídeo; 17 posts por pedido.",
-  d:"126 de 135 posts com vídeo e áudio: quem aparece, cenário, música, volume, tom e ritmo da fala (9 Reels com música licenciada sem arquivo na API).", p:"O plano gratuito limita pedidos por dia, não tokens: lotes de 17 posts por pedido. Links do Instagram renovados antes da análise."},
+  d:"101 de 102 posts com vídeo e áudio: quem aparece, cenário, música, volume, tom e ritmo da fala (1 Reels com música licenciada sem arquivo na API).", p:"O plano gratuito limita pedidos por dia, não tokens: lotes de 17 posts por pedido. Links do Instagram renovados antes da análise."},
  {id:"pad", x:560, y:170, t:"Padrões", s:"top × controle", col:"Inteligência",
   tec:"bootstrap · lift · IC 90%", o:"Compara cada característica entre top e controle.",
   d:"Achado só com lift > 1,1 (ou < 0,9) e em 3+ perfis; o resto aparece como inconclusivo.", p:"Evita confundir viral isolado com padrão."},

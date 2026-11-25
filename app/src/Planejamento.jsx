@@ -35,7 +35,7 @@ export default function Planejamento({ pecaId }) {
 
   const carregar = useCallback(() => {
     const { inicio, dias } = janelaDaVista(vista);
-    api.agenda(inicio, undefined, dias).then(setAgenda).catch(() => {});
+    api.agenda(inicio, undefined, dias).then(setAgenda).catch((e) => setAgenda({ sugestoes: [], pecas: [], erro: e.message }));
     api.agenda(segundaDe(hojeIso()), undefined, 7).then(setSemana).catch(() => {});
   }, [vista]);
   useEffect(carregar, [carregar]);

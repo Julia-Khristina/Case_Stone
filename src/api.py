@@ -126,8 +126,12 @@ VALORES = {"financas": "finanças", "dor": "dor do cliente", "historia_de_empree
 
 def base() -> fx.Base:
     """Base da coleta mais recente; recarrega sozinha quando a atualização semanal traz coleta ou análise nova."""
-    coleta = Path(os.getenv("BOAPAUTA_COLETA", "")) if os.getenv("BOAPAUTA_COLETA") else \
-        max((p for p in (ROOT / "data" / "raw").iterdir() if p.is_dir() and p.name[:4].isdigit()), key=lambda p: p.name)
+    pastas = [p for p in (ROOT / "data" / "raw").iterdir() if p.is_dir() and p.name[:4].isdigit()] \
+        if (ROOT / "data" / "raw").exists() else []
+    if not os.getenv("BOAPAUTA_COLETA") and (not pastas or not (ROOT / "data" / "processed" / "scores.csv").exists()):
+        raise HTTPException(503, "Base de dados ausente neste servidor. No deploy, defina BOAPAUTA_DADOS_URL com o "
+                                 "pacote gerado por scripts/pacote_dados.py (veja o README, seção Deploy).")
+    coleta = Path(os.getenv("BOAPAUTA_COLETA", "")) if os.getenv("BOAPAUTA_COLETA") else max(pastas, key=lambda p: p.name)
     processados = ROOT / "data" / "processed"
     versao = tuple(int(a.stat().st_mtime) if a.exists() else 0
                    for a in (processados / "scores.csv", processados / "rotulos_texto.jsonl", processados / "rotulos_visuais.jsonl"))

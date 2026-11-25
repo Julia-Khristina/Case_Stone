@@ -39,3 +39,4 @@ config/stone_interno.yaml
 # playbook gerado: tem o CTR interno dos anúncios do Impulso e capas de posts de terceiros embutidas
 docs/playbook_stone.html
 app/dist/
+dist/

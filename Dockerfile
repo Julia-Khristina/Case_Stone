@@ -23,5 +23,6 @@ COPY config/ config/
 COPY scripts/ scripts/
 COPY --from=app /app/dist app/dist
 EXPOSE 8000
-HEALTHCHECK --interval=30s --timeout=5s CMD python -c "import urllib.request;urllib.request.urlopen('http://localhost:8000/api/segmentos')"
-CMD ["uvicorn", "src.api:app", "--host", "0.0.0.0", "--port", "8000"]
+# Render (e outros) definem a porta em $PORT; sem ela, 8000. Antes da API, baixa o pacote de dados se faltar a base.
+HEALTHCHECK --interval=30s --timeout=5s CMD python -c "import os,urllib.request;urllib.request.urlopen('http://localhost:'+os.getenv('PORT','8000')+'/api/acesso')"
+CMD ["sh", "-c", "python scripts/preparar_deploy.py && exec uvicorn src.api:app --host 0.0.0.0 --port ${PORT:-8000}"]

@@ -74,6 +74,7 @@ export default function Calendario({ agenda, vista, setVista, onSugestao, onPeca
           <button onClick={() => setVista({ ...vista, ref: hoje })}>Hoje</button>
         </div>
       </div>
+      {agenda?.erro && <div className="cal-erro" role="alert">{agenda.erro}</div>}
       <div className="cal-grade">
         {DIAS_SEMANA.map((d) => <div key={d} className="cal-cab">{d}</div>)}
         {dias.map((d) => {
